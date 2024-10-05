@@ -15,7 +15,7 @@ export default class MenuScene extends Scene {
   private pauseButton: ImageButton;
 
   constructor(game: SceneManager) {
-    super(game);
+    super(game, 'MenuScene');
     this.canvas = null;
     this.context = null;
     this.isRunning = false; // Scene running state
@@ -77,6 +77,11 @@ export default class MenuScene extends Scene {
       const gameScene = new GameScene(this.game); 
       this.game.changeScene(gameScene, this.canvas, this.context);
     }
+  }
+
+  private pauseGame() {
+    console.log("pausing game");
+
   }
 
   render() {
