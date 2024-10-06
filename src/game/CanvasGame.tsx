@@ -82,9 +82,30 @@ const CanvasGame: React.FC = () => {
 				// Update the current scene state
 				setCurrentScene(menuScene.sceneName);
 
+                let lastTime = 0;
+                let accumulatedTime = 0;
+                const fixedDeltaTime = 1 / 60; // Fixed time step of 60 FPS
+
 				// Animation loop to continuously render the current scene
-				const animationLoop = () => {
+				const animationLoop = (time: number) => {
+                    if (lastTime === 0) {
+                        lastTime = time;
+                    }
+                    const delta = (time - lastTime) / 1000; // delta time in seconds
+					lastTime = time;
+
+                    // Accumulate the time that passed
+                    accumulatedTime += delta;
+
+
 					context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+                    if (sceneManagerRef.current.currentScene) {
+                        // Update the game logic with a fixed time step
+                        while (accumulatedTime >= fixedDeltaTime) {
+                            sceneManagerRef.current.currentScene.update(fixedDeltaTime);
+                            accumulatedTime -= fixedDeltaTime;
+                        }
+					}
                     if (sceneManagerRef.current.currentScene && sceneManagerRef.current.currentScene.sceneName !== currentScene) {
 						setCurrentScene(sceneManagerRef.current.currentScene.sceneName);
 					}

@@ -7,6 +7,7 @@ export class Joystick {
 	private handleRadius: number;
 	private isDragging: boolean;
 	private active: boolean; // New flag to indicate if the joystick is active
+    public onMove: (x: number, y: number) => void;
 
 	constructor(baseRadius: number, handleRadius: number) {
 		this.baseX = 0;
@@ -17,6 +18,7 @@ export class Joystick {
 		this.handleY = this.baseY;
 		this.isDragging = false;
 		this.active = false; // Joystick starts as inactive
+        this.onMove = () => {};
 	}
 
 	// Set the base position and activate the joystick
@@ -88,12 +90,20 @@ export class Joystick {
 			this.handleX = this.baseX + Math.cos(angle) * maxDist;
 			this.handleY = this.baseY + Math.sin(angle) * maxDist;
 		}
+        const direction = this.getDirection();
+		if (this.onMove) {
+			this.onMove(direction.x, direction.y);
+		}
 	}
 
 	// Method to handle mouse/touch end
 	endDrag() {
 		this.isDragging = false;
 		this.deactivate(); // Optionally deactivate joystick on release
+
+        if (this.onMove) {
+            this.onMove(0, 0);
+        }
 	}
 
 	// Method to calculate the joystick direction

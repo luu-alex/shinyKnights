@@ -13,9 +13,7 @@ export class Scene {
 		// Initialization logic for the scene
 	}
 
-	update(deltaTime: number) {
-		// Game update logic, called every frame
-		console.log(deltaTime);
+	update(_: number) {
 	}
 
 	render() {

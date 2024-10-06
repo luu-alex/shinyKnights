@@ -14,6 +14,10 @@ export default class MenuScene extends Scene {
   private devicePixelRatio: number;
   private pauseButton: ImageButton;
 
+  // Store bound event handlers
+  private boundHandleMouseMove: (event: MouseEvent) => void;
+  private boundHandleClick: (event: MouseEvent) => void;
+
   constructor(game: SceneManager) {
     super(game, 'MenuScene');
     this.canvas = null;
@@ -24,6 +28,8 @@ export default class MenuScene extends Scene {
     this.startButton = new Button(150, 300, 150, 100, 'Start', this.startGame.bind(this));
     this.pauseButton = new ImageButton(100, 100, 32, 32, 'pause1.png', this.pauseGame.bind(this));
 
+    this.boundHandleMouseMove = this.handleMouseMove.bind(this);
+    this.boundHandleClick = this.handleClick.bind(this);
   }
 
   init(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
@@ -34,8 +40,8 @@ export default class MenuScene extends Scene {
     console.log("canvas", this.canvas);
 
     // Add event listeners to handle interaction with the start button
-    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
-    this.canvas.addEventListener('click', this.handleClick.bind(this));
+    this.canvas.addEventListener('mousemove', this.boundHandleMouseMove);
+    this.canvas.addEventListener('click', this.boundHandleClick);
 
     // Start rendering the menu
     this.render();
@@ -59,8 +65,8 @@ export default class MenuScene extends Scene {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = (event.clientX - rect.left) * this.devicePixelRatio;
     const mouseY = (event.clientY - rect.top) * this.devicePixelRatio;
-    console.log("mouseX", mouseX);
-    console.log("mouseY", mouseY);
+    console.log("menu scene mouseX", mouseX);
+    console.log("menu scene mouseY", mouseY);
     console.log(this.startButton.x * this.devicePixelRatio);
     console.log(this.startButton.y * this.devicePixelRatio);
     // Check if the start button was clicked
@@ -109,8 +115,8 @@ export default class MenuScene extends Scene {
   destroy() {
     if (this.canvas) {
       // Remove event listeners when the scene is destroyed
-      this.canvas.removeEventListener('mousemove', this.handleMouseMove.bind(this));
-      this.canvas.removeEventListener('click', this.handleClick.bind(this));
+      this.canvas.removeEventListener('mousemove', this.boundHandleMouseMove);
+      this.canvas.removeEventListener('click', this.boundHandleClick);
     }
   }
 }

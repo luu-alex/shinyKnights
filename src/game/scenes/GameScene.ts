@@ -1,6 +1,10 @@
 import { Scene } from './Scene';
 import { Joystick } from '../Joystick';
 import { ImageButton } from '../../components/ImageButton';
+import MenuScene from './MenuScene';
+import Sprite from '../Sprite';
+import Player from '../classes/Player';
+import SkeletonWarrior from '../classes/skeletonWarrior';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -9,6 +13,13 @@ export default class GameScene extends Scene {
 	private devicePixelRatio: number;
 	private joystick: Joystick | null;
 	private pauseButton: ImageButton;
+    private sprite: Sprite;
+    private walkingSprite: Sprite;
+    private dyingSprite: Sprite;
+    private deltaTime: number;
+    private player: Player;
+	private skeletonWarrior: SkeletonWarrior;
+    
 
 	constructor(game: any) {
 		super(game, 'gameScene');
@@ -19,6 +30,16 @@ export default class GameScene extends Scene {
 		this.devicePixelRatio = window.devicePixelRatio || 1;
 		this.joystick = null; // Initialize joystick as null
 		this.pauseButton = new ImageButton(10, 30, 32, 32, 'pause1.png', this.pauseGame.bind(this));
+        this.sprite = new Sprite('characters/pirate.png', 32, 32, 4, 100);
+        this.walkingSprite = new Sprite('characters/pirate.png', 32, 32, 6, 100, 1);
+        this.dyingSprite = new Sprite('characters/pirate.png', 32, 32, 5, 100, 6);
+        this.deltaTime = 0;
+
+        const playerIdleSprite = new Sprite('characters/warden.png', 32, 32, 4, 100);
+        const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
+        const playerDeathSprite = new Sprite('characters/warden.png', 32, 32, 5, 100, 6);
+        this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], 100, 100, 200);
+        this.skeletonWarrior = new SkeletonWarrior(200, 200, this.player);
 	}
 
 	init(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
@@ -33,6 +54,9 @@ export default class GameScene extends Scene {
 
 		// Initialize the joystick within GameScene
 		this.joystick = new Joystick(baseRadius, handleRadius);
+        this.joystick.onMove = (xInput, yInput) => {
+            this.player.handleInput(xInput, yInput);
+        };
 
 		// Add event listeners to handle interaction with the joystick
 		this.canvas.addEventListener('mousemove', this.handleInteractionMove.bind(this));
@@ -46,8 +70,19 @@ export default class GameScene extends Scene {
 		this.render();
 	}
 
+    public update(delta: number) {
+        this.deltaTime = delta;
+        this.sprite.update();
+        this.walkingSprite.update();
+        this.dyingSprite.update();
+        this.player.update(delta);
+		this.skeletonWarrior.update(delta);
+    };
+
 	private pauseGame() {
-		console.log('pausing game');
+        console.log("should transiction")
+        const menuScene = new MenuScene(this.game);
+        this.game.changeScene(menuScene, this.canvas!, this.context!);
 	}
 	private handleInteractionStart(event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // Prevents scrolling/zooming on touch devices
@@ -72,7 +107,9 @@ export default class GameScene extends Scene {
 	}
 
 	// Unified event handler for both mouse and touch end
-	private handleInteractionEnd() {
+	private handleInteractionEnd(event: MouseEvent | TouchEvent) {
+        const { x, y } = this.getCoordinatesFromEvent(event);
+        this.pauseButton.handleClick(x, y, this.devicePixelRatio);
 		if (!this.joystick) return;
 		this.joystick.endDrag();
 	}
@@ -99,6 +136,7 @@ export default class GameScene extends Scene {
 
 	render() {
 		if (!this.isRunning || !this.context || !this.canvas) return;
+        this.context.imageSmoothingEnabled = false;
 
 		// Clear the canvas
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -115,11 +153,18 @@ export default class GameScene extends Scene {
 		this.context.font = '12px Arial';
 		this.context.fillText("width w/o device pixel:" + this.canvas.width.toString(), this.canvas.width/this.devicePixelRatio - 200, 20);
 		this.context.fillText("height w/o device pixel:" + this.canvas.height.toString(), this.canvas.width/this.devicePixelRatio - 200, 60);
+		this.context.fillText("device pixel:" + this.devicePixelRatio, this.canvas.width/this.devicePixelRatio - 200, 100);
+		this.context.fillText("delta:" + this.deltaTime, this.canvas.width/this.devicePixelRatio - 200, 140);
 
 		if (this.joystick) {
 			this.joystick.render(this.context, this.devicePixelRatio);
 		}
 		this.pauseButton.render(this.context, this.devicePixelRatio);
+        this.sprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 100, 3);
+        this.walkingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 150, 3);
+        this.dyingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 200, 3);
+        this.player.render(this.context);
+		this.skeletonWarrior.render(this.context, 1.5);
 	}
 
 	destroy() {
