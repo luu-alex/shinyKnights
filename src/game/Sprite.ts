@@ -1,7 +1,7 @@
 export default class Sprite {
     private image: HTMLImageElement;
     public frameWidth: number;
-    private frameHeight: number;
+    public frameHeight: number;
     private currentFrame: number;
     private totalFrames: number;
     private frameDuration: number;

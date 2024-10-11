@@ -4,7 +4,10 @@ import { ImageButton } from '../../components/ImageButton';
 import MenuScene from './MenuScene';
 import Sprite from '../Sprite';
 import Player from '../classes/Player';
-import SkeletonWarrior from '../classes/skeletonWarrior';
+import SkeletonWarrior from '../classes/SkeletonWarrior';
+import EnemyManager from '../classes/EnemyManager';
+import ProjectileManager from '../projectiles/ProjectileManager';
+import { isColliding, resolveCollision} from '../utils';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -18,7 +21,8 @@ export default class GameScene extends Scene {
     private dyingSprite: Sprite;
     private deltaTime: number;
     private player: Player;
-	private skeletonWarrior: SkeletonWarrior;
+	private enemyManager: EnemyManager;
+	private projectileManager: ProjectileManager;
     
 
 	constructor(game: any) {
@@ -39,7 +43,8 @@ export default class GameScene extends Scene {
         const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
         const playerDeathSprite = new Sprite('characters/warden.png', 32, 32, 5, 100, 6);
         this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], 100, 100, 200);
-        this.skeletonWarrior = new SkeletonWarrior(200, 200, this.player);
+		this.enemyManager = new EnemyManager(this.player);
+		this.projectileManager = new ProjectileManager();
 	}
 
 	init(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
@@ -66,6 +71,22 @@ export default class GameScene extends Scene {
         this.canvas.addEventListener('touchstart', this.handleInteractionStart.bind(this));
 		this.canvas.addEventListener('touchmove', this.handleInteractionMove.bind(this));
 		this.canvas.addEventListener('touchend', this.handleInteractionEnd.bind(this));
+		
+		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
+		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
 
 		this.render();
 	}
@@ -76,8 +97,36 @@ export default class GameScene extends Scene {
         this.walkingSprite.update();
         this.dyingSprite.update();
         this.player.update(delta);
-		this.skeletonWarrior.update(delta);
+		this.enemyManager.update(delta);
+
+		this.projectileManager.update(delta, this.enemyManager.enemies);
+
+		this.handlePlayerAttack();
+		for (let i = 0; i < this.enemyManager.enemies.length; i++) {
+			const enemyA = this.enemyManager.enemies[i];
+	
+			// Check for enemy-to-enemy collisions and resolve them
+			for (let j = i + 1; j < this.enemyManager.enemies.length; j++) {
+				const enemyB = this.enemyManager.enemies[j];
+				if (isColliding(enemyA, enemyB)) {
+					resolveCollision(enemyA, enemyB);
+				}
+			}
+	
+			// Check for player-to-enemy collisions and resolve them
+			if (isColliding(this.player, enemyA)) {
+				resolveCollision(this.player, enemyA);
+			}
+		}
+
     };
+
+	public handlePlayerAttack() {
+        const projectile = this.player.attack(this.enemyManager.enemies); // Player attack returns a new projectile
+        if (projectile) {
+            this.projectileManager.addProjectile(projectile); // Add the projectile to the manager
+        }
+    }
 
 	private pauseGame() {
         console.log("should transiction")
@@ -164,14 +213,15 @@ export default class GameScene extends Scene {
         this.walkingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 150, 3);
         this.dyingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 200, 3);
         this.player.render(this.context);
-		this.skeletonWarrior.render(this.context, 1.5);
+		this.enemyManager.render(this.context);
+		this.projectileManager.render(this.context);
 	}
 
 	destroy() {
 		if (this.canvas) {
 			// Remove event listeners when the scene is destroyed
 			this.canvas.removeEventListener('mousemove', this.handleInteractionMove.bind(this));
-			this.canvas.removeEventListener('mousedown', this.handleInteractionMove.bind(this));
+			this.canvas.removeEventListener('mousedown', this.handleInteractionStart.bind(this));
 			this.canvas.removeEventListener('mouseup', this.handleInteractionEnd.bind(this));
 			this.canvas.removeEventListener('touchstart', this.handleInteractionStart.bind(this));
 			this.canvas.removeEventListener('touchmove', this.handleInteractionMove.bind(this));
