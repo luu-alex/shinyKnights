@@ -1,12 +1,12 @@
 import Sprite from "../Sprite";
 import Projectile from "./Projectile";
-import { BleedEffect } from '../statusEffect/StatusEffect';
+import { BurningEffect, StatusEffect} from '../statusEffect/StatusEffect';
 
-export default class DaggerProjectile extends Projectile {
-    constructor(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number) {
-        super(x, y, targetX, targetY, damage, pierce, 5, 1000, new Sprite('weapons/dagger.png', 31, 20, 1, 50));
+export default class FireballProjectile extends Projectile {
+    constructor(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number, radius = 5, maxDistance = 1000, sprite: Sprite, statusEffects: StatusEffect[]) {
+        super(x, y, targetX, targetY, damage, pierce, radius, maxDistance, sprite, statusEffects, true);
         this.speed = 100
-        this.statusEffects = [new BleedEffect(1000)]
+        this.statusEffects = [new BurningEffect(1, 1000)]
     }
     public render(context: CanvasRenderingContext2D) {
         if (this.alive) {

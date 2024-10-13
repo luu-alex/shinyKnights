@@ -4,6 +4,7 @@ import { SceneManager } from './SceneManager';
 import GameScene from './GameScene';
 import { Button } from '../../components/Button';
 import { ImageButton } from '../../components/ImageButton';
+import  { AssetManager } from '../../assets/assetManager';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -42,6 +43,10 @@ export default class MenuScene extends Scene {
     // Add event listeners to handle interaction with the start button
     this.canvas.addEventListener('mousemove', this.boundHandleMouseMove);
     this.canvas.addEventListener('click', this.boundHandleClick);
+
+    const assets = new AssetManager(this.startGame);
+    assets.loadImage('daggerSprite', 'weapon/dagger.png');
+    assets.loadImage('woodenarrow', 'weapon/woodenArrow.png');
 
     // Start rendering the menu
     this.render();

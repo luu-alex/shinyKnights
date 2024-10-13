@@ -43,3 +43,41 @@ export function resolveCollision(enemyA: Enemy | Player, enemyB: Enemy) {
         }
     }
 }
+
+export function findClosestEnemy(enemies: Enemy[], player: Player): Enemy | null {
+    if (enemies.length === 0) return null;  // No enemies, return null
+
+    let closestEnemy: Enemy | null = null;
+    let shortestDistance = Infinity;
+
+    for (const enemy of enemies) {
+        const distance = Math.sqrt((enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2);
+        if (distance < shortestDistance) {
+            shortestDistance = distance;
+            closestEnemy = enemy;
+        }
+    }
+
+    return closestEnemy;  // Return the closest enemy
+}
+
+export function checkCollision(enemy: Enemy, x: number, y: number, radius: number) {
+    const enemyCenterX = enemy.x + enemy.width / 2;
+    const enemyCenterY = enemy.y + enemy.height / 2;
+
+    // Calculate distance between explosion center and enemy center
+    const dx = enemyCenterX - x;
+    const dy = enemyCenterY - y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Check if the distance is less than or equal to the explosion radius
+    if (distance <= radius) {
+        // Collision detected, apply effects or damage
+        // enemy.takeDamage(damage);  // Example of applying 50 damage
+        // console.log('Explosion hit enemy!');
+        return true;
+    }
+}
+export function getRandomElement<T>(array: T[]): T | null {
+    return array.length > 0 ? array[Math.floor(Math.random() * array.length)] : null;
+}

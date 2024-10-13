@@ -19,8 +19,9 @@ export default class Projectile {
     public directionY: number;
     public sprite: Sprite;
     public statusEffects: StatusEffect[] = [];  
+    public willExplode: boolean = false;
 
-    constructor(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number, radius = 5, maxDistance = 1000, sprite: Sprite, statusEffects: StatusEffect[] = []) {
+    constructor(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number, radius = 5, maxDistance = 1000, sprite: Sprite, statusEffects: StatusEffect[] = [], willExplode = false) {
         this.x = x;
         this.y = y;
         this.targetX = targetX;
@@ -42,6 +43,7 @@ export default class Projectile {
         this.directionY = dy / distance;  // Normalize Y
         this.sprite = sprite;
         this.statusEffects = statusEffects;
+        this.willExplode = willExplode;
     }
 
     // Update projectile position
@@ -57,6 +59,7 @@ export default class Projectile {
         if (this.distanceTraveled >= this.maxDistance) {
             this.alive = false;
         }
+        this.sprite.update();
     }
 
     // Check collision with enemies
@@ -104,6 +107,9 @@ export default class Projectile {
     public onHit(target: Enemy) {
         for (const effect of this.statusEffects) {
             effect.applyEffect(target);
+            if (effect.isDOT) {
+                target.applyStatusEffect(effect);
+            }
         }
     }
 
@@ -113,7 +119,7 @@ export default class Projectile {
         if (this.alive) {
             context.fillStyle = 'red';
             context.beginPath();
-            context.arc(this.x, this.y, 5, 0, Math.PI * 2); // Draw bullet as a circle
+            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Draw bullet as a circle
             context.fill();
         }
     }

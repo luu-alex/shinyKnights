@@ -27,7 +27,7 @@ export default class Enemy {
     public height: number;
     private floatingDamage: FloatingDamage[] = [];
     private statusEffects: StatusEffect[] = [];
-    public bleedMultiplier: number = 1;
+    public bleedMultiplier: number = 0;
     public bleedMultipliers: BleedingDamage[] = [];
 
     constructor(
@@ -133,7 +133,17 @@ export default class Enemy {
     }
 
     public applyStatusEffect(effect: StatusEffect) {
-        this.statusEffects.push(effect);
+        const existingEffectIndex = this.statusEffects.findIndex(
+            existingEffect => existingEffect.constructor === effect.constructor
+        );
+    
+        if (existingEffectIndex !== -1) {
+            // Replace the existing effect with the new one
+            this.statusEffects[existingEffectIndex] = effect;
+        } else {
+            // If no matching effect is found, add the new effect
+            this.statusEffects.push(effect);
+        }
     }
 
     // Attacking behavior
@@ -161,6 +171,9 @@ export default class Enemy {
         this.statusEffects = this.statusEffects.filter(effect => !effect.isExpired());
         for (const effect of this.statusEffects) {
             effect.update(deltaTime);
+            if (effect.isDOT) {
+                effect.applyEffect(this);
+            }
         }
 
         this.handleBehavior(deltaTime);
@@ -174,6 +187,7 @@ export default class Enemy {
         for (const bleedMultiplier of this.bleedMultipliers) {
             bleedMultiplier.update(deltaTime);
         }
+        // add check death here
 
         // Update sprite animations
         this.currentSprite.update();
@@ -223,13 +237,15 @@ export default class Enemy {
     
 
     public takeDamage(damage: number) {
-        const d = damage * this.bleedMultiplier;
+        const d = damage * (1 +this.bleedMultiplier);
         this.hp -= d;
-        console.log("this.hp", this.hp)
         const damageText = new FloatingDamage(this.x, this.y, d);
         this.floatingDamage.push(damageText);
-        const bleedText = new BleedingDamage(this.x + 30, this.y, this.bleedMultiplier);
-        this.bleedMultipliers.push(bleedText);
+        if (this.bleedMultiplier > 0) {
+            const bleedText = new BleedingDamage(this.x + 30, this.y, this.bleedMultiplier);
+            this.bleedMultipliers.push(bleedText);
+
+        }
     }
 
     public freeze(duration: number) {

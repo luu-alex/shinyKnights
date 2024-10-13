@@ -2,9 +2,11 @@ import Sprite from '../Sprite';
 import Weapon from '../weapon/Weapon';
 import Enemy from './Enemy';
 // import Sword from '../weapon/Sword';
-// import Spear from '../weapon/Spear';
+import Spear from '../weapon/Spear';
 // import Crossbow from '../weapon/Crossbow';
-import Dagger from '../weapon/Dagger';
+// import Dagger from '../weapon/Dagger';
+import Skill from '../skills/Skill';
+import { findClosestEnemy } from '../utils'
 
 enum PlayerState {
     Idle,
@@ -25,6 +27,8 @@ export default class Player {
     private currentWeapon: Weapon;
     public width: number;
     public height: number;
+    public level: number = 1;
+    public skills: Skill[] = [];
 
 
     constructor(sprites: Sprite[], x: number, y: number, speed: number,) {
@@ -38,7 +42,7 @@ export default class Player {
         this.speed = speed;
         this.joystickInput = { x: 0, y: 0 };
         this.isFacingRight = true;
-        this.currentWeapon = new Dagger();
+        this.currentWeapon = new Spear();
         this.width = 32;
         this.height = 32;
 
@@ -54,25 +58,13 @@ export default class Player {
         // Update the sprite animation
         this.currentSprite.update();
     }
-    private findClosestEnemy(enemies: Enemy[]): Enemy | null {
-        if (enemies.length === 0) return null;  // No enemies, return null
 
-        let closestEnemy: Enemy | null = null;
-        let shortestDistance = Infinity;
-
-        for (const enemy of enemies) {
-            const distance = Math.sqrt((enemy.x - this.x) ** 2 + (enemy.y - this.y) ** 2);
-            if (distance < shortestDistance) {
-                shortestDistance = distance;
-                closestEnemy = enemy;
-            }
-        }
-
-        return closestEnemy;  // Return the closest enemy
+    useSkill(skillIndex: number, enemies: Enemy[], currentTime: number) {
+        const skill = this.skills[skillIndex];
+        skill.activateSkill(enemies, currentTime);
     }
-
     attack(enemies: Enemy[]) {
-        const closestEnemy = this.findClosestEnemy(enemies);
+        const closestEnemy = findClosestEnemy(enemies, this);
 
         if (closestEnemy) {
             const spawnPoint = this.getClosestEdgeToEnemy(closestEnemy);
@@ -155,5 +147,20 @@ export default class Player {
         } else {
             this.state = PlayerState.Idle;
         }
+    }
+
+    public learnSkill(skill: Skill) {
+        this.skills.push(skill);
+    }
+
+    public upgradeSkill(skillIndex: number) {
+        const skill = this.skills[skillIndex];
+        skill.upgrade();
+    }
+
+    public levelUp() {
+
+        this.level++;
+        // give option to upgrade skills or buffs
     }
 }

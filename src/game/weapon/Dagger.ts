@@ -7,7 +7,7 @@ export default class Dagger extends Weapon {
     public lastAttackTime: number;
 
     constructor() {
-        super('dagger', 10, 500);
+        super('dagger', 10, 3000);
         this.lastAttackTime = 0;
     }
 

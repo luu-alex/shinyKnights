@@ -8,6 +8,10 @@ import SkeletonWarrior from '../classes/SkeletonWarrior';
 import EnemyManager from '../classes/EnemyManager';
 import ProjectileManager from '../projectiles/ProjectileManager';
 import { isColliding, resolveCollision} from '../utils';
+// import { Fireball } from '../skills/Fireball';
+// import { LightningSkill } from '../skills/lightning';
+import Arthur from '../skills/Arthur';
+// import { Guardian } from '../skills/Gaurdian';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -16,9 +20,6 @@ export default class GameScene extends Scene {
 	private devicePixelRatio: number;
 	private joystick: Joystick | null;
 	private pauseButton: ImageButton;
-    private sprite: Sprite;
-    private walkingSprite: Sprite;
-    private dyingSprite: Sprite;
     private deltaTime: number;
     private player: Player;
 	private enemyManager: EnemyManager;
@@ -34,17 +35,27 @@ export default class GameScene extends Scene {
 		this.devicePixelRatio = window.devicePixelRatio || 1;
 		this.joystick = null; // Initialize joystick as null
 		this.pauseButton = new ImageButton(10, 30, 32, 32, 'pause1.png', this.pauseGame.bind(this));
-        this.sprite = new Sprite('characters/pirate.png', 32, 32, 4, 100);
-        this.walkingSprite = new Sprite('characters/pirate.png', 32, 32, 6, 100, 1);
-        this.dyingSprite = new Sprite('characters/pirate.png', 32, 32, 5, 100, 6);
         this.deltaTime = 0;
 
         const playerIdleSprite = new Sprite('characters/warden.png', 32, 32, 4, 100);
         const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
-        const playerDeathSprite = new Sprite('characters/warden.png', 32, 32, 5, 100, 6);
-        this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], 100, 100, 200);
+        const playerDeathSprite = new Sprite('characters/warden.png', 32, 64, 5, 100, 6);
+        this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], 300, 500, 200);
+
 		this.enemyManager = new EnemyManager(this.player);
 		this.projectileManager = new ProjectileManager();
+
+		// const fireball = new Fireball(this.player, this.projectileManager);
+		// this.player.learnSkill(fireball);
+		// const lightning = 
+		// this.lightning = new LightningSkill(this.player);
+		// this.player.learnSkill(this.lightning);
+
+		// const guardian = new Guardian(this.player);
+		// this.player.learnSkill(guardian);
+		const artur = new Arthur(this.player);
+		this.player.learnSkill(artur);
+
 	}
 
 	init(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
@@ -76,32 +87,23 @@ export default class GameScene extends Scene {
 		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
 		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
 		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
-		this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
 
 		this.render();
 	}
 
     public update(delta: number) {
         this.deltaTime = delta;
-        this.sprite.update();
-        this.walkingSprite.update();
-        this.dyingSprite.update();
         this.player.update(delta);
 		this.enemyManager.update(delta);
 
 		this.projectileManager.update(delta, this.enemyManager.enemies);
 
 		this.handlePlayerAttack();
+		// const skill = this.player.skills[0] as Fireball
+		// skill.update(delta, this.enemyManager.enemies);
+		for (const skill of this.player.skills) {
+			skill.update(delta, this.enemyManager.enemies);
+		}
 		for (let i = 0; i < this.enemyManager.enemies.length; i++) {
 			const enemyA = this.enemyManager.enemies[i];
 	
@@ -118,7 +120,7 @@ export default class GameScene extends Scene {
 				resolveCollision(this.player, enemyA);
 			}
 		}
-
+		// this.lightning.update();
     };
 
 	public handlePlayerAttack() {
@@ -209,12 +211,14 @@ export default class GameScene extends Scene {
 			this.joystick.render(this.context, this.devicePixelRatio);
 		}
 		this.pauseButton.render(this.context, this.devicePixelRatio);
-        this.sprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 100, 3);
-        this.walkingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 150, 3);
-        this.dyingSprite.render(this.context, 100, this.canvas.height/this.devicePixelRatio - 200, 3);
         this.player.render(this.context);
 		this.enemyManager.render(this.context);
 		this.projectileManager.render(this.context);
+		// render skills
+		for (const skill of this.player.skills) {
+			skill.render(this.context, this.player.x, this.player.y);
+		}
+		// this.lightning.render(this.context, 100, 100, this.devicePixelRatio);
 	}
 
 	destroy() {
