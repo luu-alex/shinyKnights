@@ -14,7 +14,7 @@ export class HolyCircle extends Skill {
     private hitEnemies: Set<Enemy>;
 
     constructor(player: Player) {
-        super("holyCircle", 50, 5000, new Sprite('skills/holyCircle.png', 121, 121, 17, 120), player); // 50 damage, 5 second cooldown
+        super("holyCircle", 50, 5000, new Sprite('skills/holyCircle.png', 121, 121, 17, 240), player); // 50 damage, 5 second cooldown
         this.x = 0;
         this.y = 0;
         this.radius = 50; // Radius of the circle
@@ -49,9 +49,12 @@ export class HolyCircle extends Skill {
 
         // If the skill is off cooldown, activate it
         if (this.canUseSkill(currentTime)) {
+            console.log("can use skill")
+            this.hitEnemies.clear(); // Clear the set of hit enemies
             this.activateSkill(enemies, currentTime);
         }
         if (this.active) {
+            console.log("active")
             this.currentDuration += deltaTime;
 
             // Check if the circle's duration has expired
@@ -79,10 +82,10 @@ export class HolyCircle extends Skill {
     public render(context: CanvasRenderingContext2D, _: number, __: number) {
         if (this.active) {
             // Render the holy circle sprite
-            context.beginPath();
-            context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
-            context.fillStyle = 'rgba(255, 255, 0, 0.3)'; // Light yellow color for the circle
-            context.fill();
+            // context.beginPath();
+            // context.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, false);
+            // context.fillStyle = 'rgba(255, 255, 0, 0.3)'; // Light yellow color for the circle
+            // context.fill();
 
             // Optionally, render the sprite for more visual effect
             this.sprite.render(context, this.x - this.sprite.frameWidth / 2, this.y - this.sprite.frameHeight / 2);

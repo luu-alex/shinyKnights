@@ -53,8 +53,8 @@ export default class Bunny extends Pet {
         this.currentSprite.render(context, this.x, this.y, 2);
 
         // Debug rectangle (optional)
-        context.strokeStyle = 'green';
-        context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
-        context.stroke();
+        // context.strokeStyle = 'green';
+        // context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
+        // context.stroke();
     }
 }

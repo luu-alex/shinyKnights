@@ -94,8 +94,8 @@ export default class Boar extends Pet {
         context.restore(); // Restore the canvas state to avoid affecting other elements
 
         // Debug rectangle (optional)
-        context.strokeStyle = 'orange';
-        context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
-        context.stroke();
+        // context.strokeStyle = 'orange';
+        // context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
+        // context.stroke();
     }
 }
