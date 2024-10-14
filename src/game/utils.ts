@@ -1,8 +1,9 @@
+import Pet from './Pets/Pet';
 import Enemy from './classes/Enemy';
 import Player from './classes/Player';
 
 // Helper function to check AABB collision between two enemies
-export function isColliding(enemyA: Enemy | Player, enemyB: Enemy): boolean {
+export function isColliding(enemyA: Enemy | Player | Pet, enemyB: Enemy): boolean {
     return (
         enemyA.x < enemyB.x + enemyB.width &&
         enemyA.x + enemyA.width > enemyB.x &&
@@ -44,7 +45,7 @@ export function resolveCollision(enemyA: Enemy | Player, enemyB: Enemy) {
     }
 }
 
-export function findClosestEnemy(enemies: Enemy[], player: Player): Enemy | null {
+export function findClosestEnemy(enemies: Enemy[], player: Player | Pet): Enemy | null {
     if (enemies.length === 0) return null;  // No enemies, return null
 
     let closestEnemy: Enemy | null = null;

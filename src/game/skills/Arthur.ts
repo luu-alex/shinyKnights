@@ -88,10 +88,10 @@ export default class ArthurSwordSkill extends Skill {
     public render(context: CanvasRenderingContext2D, _: number, __: number) {
         if (this.isFlying) {
             // debug 
-            context.fillStyle = 'red';
-            context.beginPath();
-            context.arc(this.x, this.y, this.sprite.frameWidth, 0, Math.PI * 2);
-            context.fill();
+            // context.fillStyle = 'red';
+            // context.beginPath();
+            // context.arc(this.x, this.y, this.sprite.frameWidth, 0, Math.PI * 2);
+            // context.fill();
             this.sprite.render(context, this.x - this.sprite.frameWidth, this.y - this.sprite.frameHeight, 2);
         }
     }

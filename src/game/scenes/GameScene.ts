@@ -8,10 +8,15 @@ import SkeletonWarrior from '../classes/SkeletonWarrior';
 import EnemyManager from '../classes/EnemyManager';
 import ProjectileManager from '../projectiles/ProjectileManager';
 import { isColliding, resolveCollision} from '../utils';
+import PetManager from '../Pets/PetManager';
 // import { Fireball } from '../skills/Fireball';
 // import { LightningSkill } from '../skills/lightning';
 import Arthur from '../skills/Arthur';
 // import { Guardian } from '../skills/Gaurdian';
+import Bear from '../Pets/Bear';
+import Bunny from '../Pets/Bunny';
+import Boar from '../Pets/Boar';
+import { HolyCircle } from '../skills/HolyCircle';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -24,6 +29,7 @@ export default class GameScene extends Scene {
     private player: Player;
 	private enemyManager: EnemyManager;
 	private projectileManager: ProjectileManager;
+	private petManager: PetManager;
     
 
 	constructor(game: any) {
@@ -45,6 +51,21 @@ export default class GameScene extends Scene {
 		this.enemyManager = new EnemyManager(this.player);
 		this.projectileManager = new ProjectileManager();
 
+		this.petManager = new PetManager();
+
+		// const petIdleSprite = new Sprite('pets/MiniBear.png', 32, 32, 4, 100);
+		// const petWalkSprite = new Sprite('pets/MiniBear.png', 32, 32, 6, 100, 1);
+		// const petAttackSprite = new Sprite('pets/MiniBear.png', 32, 32, 6, 100, 3);
+
+		// const pet = new Pet([petIdleSprite, petWalkSprite, petAttackSprite], this.player);
+		const bear = new Bear(this.player);
+		const bunny = new Bunny(this.player);
+		const boar = new Boar(this.player);
+		this.petManager.addPet(bear);
+		this.petManager.addPet(bunny);
+		this.petManager.addPet(boar);
+		const holycircle = new HolyCircle(this.player);
+		this.player.learnSkill(holycircle);
 		// const fireball = new Fireball(this.player, this.projectileManager);
 		// this.player.learnSkill(fireball);
 		// const lightning = 
@@ -97,6 +118,8 @@ export default class GameScene extends Scene {
 		this.enemyManager.update(delta);
 
 		this.projectileManager.update(delta, this.enemyManager.enemies);
+
+		this.petManager.update(delta, this.enemyManager.enemies);
 
 		this.handlePlayerAttack();
 		// const skill = this.player.skills[0] as Fireball
@@ -214,6 +237,7 @@ export default class GameScene extends Scene {
         this.player.render(this.context);
 		this.enemyManager.render(this.context);
 		this.projectileManager.render(this.context);
+		this.petManager.render(this.context);
 		// render skills
 		for (const skill of this.player.skills) {
 			skill.render(this.context, this.player.x, this.player.y);
