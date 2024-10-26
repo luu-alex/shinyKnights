@@ -49,12 +49,10 @@ export class HolyCircle extends Skill {
 
         // If the skill is off cooldown, activate it
         if (this.canUseSkill(currentTime)) {
-            console.log("can use skill")
             this.hitEnemies.clear(); // Clear the set of hit enemies
             this.activateSkill(enemies, currentTime);
         }
         if (this.active) {
-            console.log("active")
             this.currentDuration += deltaTime;
 
             // Check if the circle's duration has expired
@@ -79,7 +77,7 @@ export class HolyCircle extends Skill {
     }
 
     // Render method to draw the circle
-    public render(context: CanvasRenderingContext2D, _: number, __: number) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.active) {
             // Render the holy circle sprite
             // context.beginPath();
@@ -88,7 +86,7 @@ export class HolyCircle extends Skill {
             // context.fill();
 
             // Optionally, render the sprite for more visual effect
-            this.sprite.render(context, this.x - this.sprite.frameWidth / 2, this.y - this.sprite.frameHeight / 2);
+            this.sprite.render(context, this.x - this.sprite.frameWidth / 2 - cameraX, this.y - cameraY - this.sprite.frameHeight / 2);
         }
     }
 }

@@ -16,6 +16,9 @@ const CanvasGame: React.FC = () => {
 	const sceneManagerRef = useRef<SceneManager>(new SceneManager());
     const [ currentScene, setCurrentScene ] = useState<string>('');
 	const [tonConnectUI, _] = useTonConnectUI();
+	const lastTimeRef = useRef<number>(0); // Use ref for tracking last frame time
+    const accumulatedTimeRef = useRef<number>(0); // Use ref for accumulating time
+    
 	const fetchData = async () => {
 		const result = await axios.get('/api/data');
 		console.log(result.data);
@@ -82,29 +85,24 @@ const CanvasGame: React.FC = () => {
 				// Update the current scene state
 				setCurrentScene(menuScene.sceneName);
 
-                let lastTime = 0;
-                let accumulatedTime = 0;
-                const fixedDeltaTime = 1 / 60; // Fixed time step of 60 FPS
+                // const fixedDeltaTime = 1 / 120; // Fixed time step of 60 FPS
 
 				// Animation loop to continuously render the current scene
 				const animationLoop = (time: number) => {
-                    if (lastTime === 0) {
-                        lastTime = time;
+                    if (lastTimeRef.current === 0) {
+                        lastTimeRef.current = time;
                     }
-                    const delta = (time - lastTime) / 1000; // delta time in seconds
-					lastTime = time;
+                    const delta = (time - lastTimeRef.current) / 1000; // delta time in seconds
+					lastTimeRef.current = time;
 
                     // Accumulate the time that passed
-                    accumulatedTime += delta;
+                    accumulatedTimeRef.current += delta;
 
 
 					context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
                     if (sceneManagerRef.current.currentScene) {
                         // Update the game logic with a fixed time step
-                        while (accumulatedTime >= fixedDeltaTime) {
-                            sceneManagerRef.current.currentScene.update(fixedDeltaTime);
-                            accumulatedTime -= fixedDeltaTime;
-                        }
+                            sceneManagerRef.current.currentScene.update(delta);
 					}
                     if (sceneManagerRef.current.currentScene && sceneManagerRef.current.currentScene.sceneName !== currentScene) {
 						setCurrentScene(sceneManagerRef.current.currentScene.sceneName);

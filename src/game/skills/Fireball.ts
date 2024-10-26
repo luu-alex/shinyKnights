@@ -87,7 +87,7 @@ export class Fireball extends Skill {
         );
         fireballProjectile.speed = 100;
 
-        fireballProjectile.render = (context: CanvasRenderingContext2D) => {
+        fireballProjectile.render = (context: CanvasRenderingContext2D, cameraX: number, cameraY: number) => {
             if (fireballProjectile.alive) {
                 // Calculate the angle of rotation based on the direction
                 const angle = Math.atan2(fireballProjectile.directionY, fireballProjectile.directionX);
@@ -95,7 +95,7 @@ export class Fireball extends Skill {
                 context.save();  // Save the current state of the canvas
     
                 // Move the origin to the projectile's position
-                context.translate(fireballProjectile.x, fireballProjectile.y);
+                context.translate(fireballProjectile.x - cameraX, fireballProjectile.y - cameraY);
     
                 // Rotate the canvas around the current origin (the projectile's position)
                 context.rotate(angle);
@@ -113,9 +113,9 @@ export class Fireball extends Skill {
         // Start the cooldown timer
         this.lastUsed = Date.now();
     }
-    public render (context: CanvasRenderingContext2D) {
+    public render (context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.charging) {
-            this.chargeSprite.render(context, this.chargeX - this.chargeSprite.frameWidth, this.chargeY - this.chargeSprite.frameHeight, 2);
+            this.chargeSprite.render(context, this.chargeX - this.chargeSprite.frameWidth - cameraX, this.chargeY - this.chargeSprite.frameHeight - cameraY, 2);
         }
     }
 }

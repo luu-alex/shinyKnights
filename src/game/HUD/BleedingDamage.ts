@@ -21,13 +21,13 @@ export default class BleedingDamage {
     }
 
     // Render the floating damage text
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.lifetime > 0) {
             context.save();
             context.globalAlpha = this.alpha; // Apply transparency
             context.font = "16px Arial";
             context.fillStyle = "red"; // Color of the damage text
-            context.fillText(this.damage.toString(), this.x, this.y);
+            context.fillText(this.damage.toString(), this.x - cameraX, this.y - cameraY);
             context.restore();
         }
     }

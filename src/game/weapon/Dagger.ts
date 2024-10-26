@@ -23,13 +23,13 @@ export default class Dagger extends Weapon {
     }
 
     // Update all sword slashes
-    public update(deltaTime: number, enemies: Enemy[], context: CanvasRenderingContext2D) {
+    public update(deltaTime: number, enemies: Enemy[], context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         this.projectiles = this.projectiles.filter(p => p.alive); // Remove dead slashes
 
         for (const slash of this.projectiles) {
             slash.update(deltaTime);
             slash.checkCollision(enemies); // Check for collisions with enemies
-            slash.render(context); // Render the slash
+            slash.render(context, cameraX, cameraY); // Render the slash
         }
     }
 }

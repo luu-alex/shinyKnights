@@ -85,14 +85,14 @@ export default class ArthurSwordSkill extends Skill {
     }
 
     // Render the sword as it flies toward the target
-    public render(context: CanvasRenderingContext2D, _: number, __: number) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.isFlying) {
             // debug 
             // context.fillStyle = 'red';
             // context.beginPath();
             // context.arc(this.x, this.y, this.sprite.frameWidth, 0, Math.PI * 2);
             // context.fill();
-            this.sprite.render(context, this.x - this.sprite.frameWidth, this.y - this.sprite.frameHeight, 2);
+            this.sprite.render(context, this.x - this.sprite.frameWidth - cameraX, this.y - this.sprite.frameHeight - cameraY, 2);
         }
     }
 }

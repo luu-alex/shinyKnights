@@ -1,5 +1,6 @@
 import Sprite from '../Sprite';
 import Enemy from '../classes/Enemy';
+import Player from '../classes/Player';
 import { StatusEffect } from '../statusEffect/StatusEffect';
 
 export default class Projectile {
@@ -27,7 +28,7 @@ export default class Projectile {
         this.targetX = targetX;
         this.targetY = targetY;
         this.damage = damage;
-        this.speed = 500; // Speed of projectile
+        this.speed = 200; // Speed of projectile
         this.alive = true;
         this.pierce = pierce;
         this.hitEnemies = new Set();
@@ -86,7 +87,7 @@ export default class Projectile {
 
 
     // Check if the projectile is colliding with the enemy
-    private isCollidingWithEnemy(enemy: Enemy): boolean {
+    public isCollidingWithEnemy(enemy: Enemy | Player): boolean {
         // Check for circular collision (projectile) vs. rectangular hitbox (enemy)
         const distX = Math.abs(this.x - (enemy.x + enemy.width / 2));
         const distY = Math.abs(this.y - (enemy.y + enemy.height / 2));
@@ -115,12 +116,32 @@ export default class Projectile {
 
 
     // Render the projectile on the canvas
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {
-            context.fillStyle = 'red';
-            context.beginPath();
-            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Draw bullet as a circle
-            context.fill();
+            // Calculate the angle of rotation based on the direction
+            const angle = Math.atan2(this.directionY, this.directionX);
+
+            context.save();  // Save the current state of the canvas
+
+            const screenX = this.x - cameraX;
+            const screenY = this.y - cameraY;
+
+            context.scale(1, 1);  // Scale the context to half size
+            // Move the origin to the projectile's position
+            context.translate(screenX, screenY);
+
+            // Rotate the canvas around the current origin (the projectile's position)
+            context.rotate(angle);
+
+            // Render the sprite at the projectile's position (after translation and rotation)
+            this.sprite.render(context, -this.sprite.frameWidth / 2, -this.sprite.frameHeight / 2);
+
+            // debug
+            context.restore();  // Restore the canvas state
+            // context.fillStyle = 'yellow';
+            // context.beginPath();
+            // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Visual representation of the slash
+            // context.fill();
         }
     }
 }

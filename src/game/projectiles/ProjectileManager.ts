@@ -2,10 +2,12 @@ import Projectile from './Projectile';
 import Enemy from '../classes/Enemy';
 import Sprite from '../Sprite';
 import Explosion from '../effects/Explosion';
+import Player from '../classes/Player';
 
 export default class ProjectileManager {
     private projectiles: Projectile[] = [];
     public explosions: Explosion[] = [];
+    private enemyProjectiles: Projectile[] = [];
 
     constructor() {
         this.projectiles = [];
@@ -17,8 +19,12 @@ export default class ProjectileManager {
         this.projectiles.push(projectile);
     }
 
+    public addEnemyProjectile(projectile: Projectile) {
+        this.enemyProjectiles.push(projectile);
+    };
+
     // Update all projectiles
-    public update(deltaTime: number, enemies: Enemy[]) {
+    public update(deltaTime: number, enemies: Enemy[], player: Player) {
         // console.log(this.explosions)
         this.projectiles = this.projectiles.filter(projectile => {
             if (!projectile.alive && projectile.willExplode) {
@@ -37,16 +43,30 @@ export default class ProjectileManager {
         for (const explosion of this.explosions) {
             explosion.update(deltaTime, enemies);
         }
+
+        this.enemyProjectiles = this.enemyProjectiles.filter(projectile => projectile.alive);
+        for (const projectile of this.enemyProjectiles) {
+            projectile.update(deltaTime);
+            if (projectile.isCollidingWithEnemy(player)) { // Check collision with player
+                player.hp -= projectile.damage;
+                projectile.alive = false;
+        
+            }
+        }
     }
 
     // Render all projectiles
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         for (const projectile of this.projectiles) {
-            projectile.render(context);
+            projectile.render(context, cameraX, cameraY);
+        }
+
+        for (const projectile of this.enemyProjectiles) {
+            projectile.render(context, cameraX, cameraY);
         }
 
         for (const explosion of this.explosions) {
-            explosion.render(context);
+            explosion.render(context, cameraX, cameraY);
         }
     }
 

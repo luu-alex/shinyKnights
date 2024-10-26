@@ -18,7 +18,6 @@ export default class Bunny extends Pet {
     // Update the bunny's state and behavior
     update(delta: number) {
         this.itemFindTimer -= delta;
-        console.log(this.state);
         if (this.state === 'findItem' && this.itemFindTimer <= 25) {
             this.state = 'idle';
         } 
@@ -45,12 +44,11 @@ export default class Bunny extends Pet {
 
     // This will be the placeholder for finding items
     findItem() {
-        console.log('Bunny found an item!');
         // Future logic for finding an item will go here
     }
 
-    render(context: CanvasRenderingContext2D) {
-        this.currentSprite.render(context, this.x, this.y, 2);
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
+        this.currentSprite.render(context, this.x - cameraX, this.y - cameraY, 2);
 
         // Debug rectangle (optional)
         // context.strokeStyle = 'green';

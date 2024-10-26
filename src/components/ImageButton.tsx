@@ -44,20 +44,6 @@ export class ImageButton {
 
 	// Method to handle button click
 	handleClick(mouseX: number, mouseY: number, devicePixelRatio: number) {
-		console.log('mouseX', mouseX);
-		console.log('mouseY', mouseY);
-		console.log(
-			'this.x',
-			this.x * devicePixelRatio,
-			' ddd ',
-			(this.x + this.width) * devicePixelRatio,
-		);
-		console.log(
-			'this.y',
-			this.y * devicePixelRatio,
-			' ddd ',
-			(this.y + this.height) * devicePixelRatio,
-		);
 		if (
 			mouseX >= this.x * devicePixelRatio &&
 			mouseX <= (this.x + this.width) * devicePixelRatio &&

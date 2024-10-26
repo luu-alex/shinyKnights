@@ -4,11 +4,12 @@ import Player from './classes/Player';
 
 // Helper function to check AABB collision between two enemies
 export function isColliding(enemyA: Enemy | Player | Pet, enemyB: Enemy): boolean {
+    const enemyHitBox = enemyB.getCollisionBox();
     return (
-        enemyA.x < enemyB.x + enemyB.width &&
-        enemyA.x + enemyA.width > enemyB.x &&
-        enemyA.y < enemyB.y + enemyB.height &&
-        enemyA.y + enemyA.height > enemyB.y
+        enemyA.x < enemyHitBox.x + enemyHitBox.width &&
+        enemyA.x + enemyA.width > enemyHitBox.x &&
+        enemyA.y < enemyHitBox.y + enemyHitBox.height &&
+        enemyA.y + enemyA.height > enemyHitBox.y
     );
 }
 
@@ -81,4 +82,26 @@ export function checkCollision(enemy: Enemy, x: number, y: number, radius: numbe
 }
 export function getRandomElement<T>(array: T[]): T | null {
     return array.length > 0 ? array[Math.floor(Math.random() * array.length)] : null;
+}
+
+export function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    const words = text.split(' ');
+    let line = '';
+    const lines: string[] = [];
+
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && i > 0) {
+            lines.push(line.trim());
+            line = words[i] + ' ';
+        } else {
+            line = testLine;
+        }
+    }
+
+    lines.push(line.trim()); // Push the last line
+    return lines;
 }

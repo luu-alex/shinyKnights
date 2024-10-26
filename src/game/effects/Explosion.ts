@@ -46,15 +46,15 @@ export default class Explosion {
         }
     }
 
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {// Adjust the explosion's position by half of the scaled sprite's width and height
             // debug
             // context.fillStyle = 'red';
             // context.beginPath();
             // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Visual representation of the explosion
             // context.fill();
-            const adjustedX = this.x - (this.sprite.frameWidth * this.scale) / 2;
-            const adjustedY = this.y - (this.sprite.frameHeight * this.scale) / 2;
+            const adjustedX = this.x - (this.sprite.frameWidth * this.scale) / 2 - cameraX;
+            const adjustedY = this.y - (this.sprite.frameHeight * this.scale) / 2 - cameraY;
 
             // Render the sprite with the specified scale
             this.sprite.render(context, adjustedX, adjustedY, this.scale);

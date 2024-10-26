@@ -11,8 +11,8 @@ export default class SkeletonWarrior extends Enemy {
     }
 
     // Goblins may have a special attack
-    public attack() {
-        super.attack();
+    public attack(deltaTime: number) {
+        super.attack(deltaTime);
         // skeleton's unique attack logic here
     }
 }

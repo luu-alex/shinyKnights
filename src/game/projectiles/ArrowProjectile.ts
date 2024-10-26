@@ -5,7 +5,7 @@ export class ArrowProjectile extends Projectile {
     constructor(x: number, y: number, targetX: number, targetY: number, damage: number, pierce: number) {
         super(x, y, targetX, targetY, damage, pierce, 5, 1000, new Sprite('weapons/woodenArrow.png', 32, 32, 5, 50));
     }
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {
             // Calculate the angle of rotation based on the direction
             const angle = Math.atan2(this.directionY, this.directionX);
@@ -13,7 +13,7 @@ export class ArrowProjectile extends Projectile {
             context.save();  // Save the current state of the canvas
 
             // Move the origin to the projectile's position
-            context.translate(this.x, this.y);
+            context.translate(this.x - cameraX, this.y - cameraY);
 
             // Rotate the canvas around the current origin (the projectile's position)
             context.rotate(angle);

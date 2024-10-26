@@ -14,14 +14,15 @@ export default class Boar extends Pet {
 
     constructor(player: Player) {
         const petIdleSprite = new Sprite('pets/MiniBoar.png', 32, 32, 4, 100);
-        const petAttackSprite = new Sprite('pets/MiniBoar.png', 32, 32, 4, 100, 1);
-        super('boar', [petIdleSprite, petAttackSprite], player);
+        const petWalkSprite = new Sprite('pets/MiniBoar.png', 32, 32, 4, 100, 1);
+        const petAttackSprite = new Sprite('pets/MiniBoar.png', 32, 32, 5, 200, 3);
+        super('boar', [petIdleSprite, petWalkSprite, petAttackSprite], player);
 
-        this.attackCooldown = 2;  // 2 seconds cooldown between attacks
+        this.attackCooldown = 1.5;  // 2 seconds cooldown between attacks
         this.attackTimer = 0;        // Initialize with no cooldown
         this.currentTarget = null;   // No target initially
         this.attackRange = 1000;      // Attack range, adjust as needed
-        this.speed = 50;
+        this.speed = 200;
     }
 
     // Update the boar's state and behavior
@@ -37,21 +38,25 @@ export default class Boar extends Pet {
         if (this.currentTarget && this.isInRange(this.currentTarget)) {
             this.handleAttack(enemies, delta);
         } else {
-            console.log("currently idle")
             this.handleIdle(); // If no valid target, remain idle
         }
     }
 
     // Handle idle behavior
     handleIdle() {
-        this.currentSprite = this.sprites[0]; // Idle sprite
+        this.currentSprite = this.sprites[1]; // Idle sprite
         this.currentSprite.update();
     }
 
     // Handle attacking the nearest enemy
-    handleAttack(_: Enemy[], delta: number) {
-        this.currentSprite = this.sprites[1]; // Switch to attack sprite
+    handleAttack(_ : Enemy[], delta: number) {
+        // this.currentSprite = this.sprites[1]; // Switch to attack sprite
         this.currentSprite.update();
+        // make sure the target is still valid
+        if (this.currentTarget && this.currentTarget.hp <= 0) {
+            this.currentTarget = null; // Reset target if dead
+            return;
+        }
 
         
         if (this.currentTarget && this.attackTimer <= 0) {
@@ -68,6 +73,7 @@ export default class Boar extends Pet {
                 // If the Boar is directly on top of the enemy, deal damage
                 this.currentTarget.takeDamage(this.attackPower); // Deal damage
                 this.attackTimer = this.attackCooldown;  // Reset cooldown
+                this.currentSprite = this.sprites[2]; // Switch to attack sprite
             }
         }
     }
@@ -78,24 +84,27 @@ export default class Boar extends Pet {
     }
 
     // Render the boar on the canvas
-    render(context: CanvasRenderingContext2D) {
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         context.save(); // Save the current state of the canvas
-
+    
+        const screenX = this.x - cameraX;
+        const screenY = this.y - cameraY;
+    
         if (!this.movingRight) {
             // Flip the canvas horizontally when moving left
             context.scale(-1, 1);
-            // Adjust the x position because we flipped the canvas
-            this.currentSprite.render(context, -this.x - this.sprites[0].frameWidth * 2, this.y, 2);
+            // Adjust the x position because we flipped the canvas and incorporate camera position
+            this.currentSprite.render(context, -(screenX + this.sprites[0].frameWidth * 2), screenY, 2);
         } else {
-            // Render normally when moving right
-            this.currentSprite.render(context, this.x, this.y, 2);
+            // Render normally when moving right and incorporate camera position
+            this.currentSprite.render(context, screenX, screenY, 2);
         }
-
+    
         context.restore(); // Restore the canvas state to avoid affecting other elements
-
+    
         // Debug rectangle (optional)
         // context.strokeStyle = 'orange';
-        // context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
+        // context.strokeRect(screenX + this.sprites[0].frameWidth, screenY + this.sprites[0].frameHeight, this.width, this.height);
         // context.stroke();
     }
 }

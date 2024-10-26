@@ -8,7 +8,7 @@ export default class FireballProjectile extends Projectile {
         this.speed = 100
         this.statusEffects = [new BurningEffect(1, 1000)]
     }
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {
             // Calculate the angle of rotation based on the direction
             const angle = Math.atan2(this.directionY, this.directionX);
@@ -16,7 +16,7 @@ export default class FireballProjectile extends Projectile {
             context.save();  // Save the current state of the canvas
 
             // Move the origin to the projectile's position
-            context.translate(this.x, this.y);
+            context.translate(this.x - cameraX, this.y - cameraY);
 
             // Rotate the canvas around the current origin (the projectile's position)
             context.rotate(angle);

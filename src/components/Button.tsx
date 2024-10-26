@@ -1,5 +1,7 @@
 export class Button {
 	public isHovered: boolean;
+	private color: string;
+	private fontSize: number;
 
 	constructor(
 		public x: number,
@@ -8,25 +10,50 @@ export class Button {
 		public height: number,
 		private text: string,
 		private onClick: () => void,
+		color: string,
+		fontSize: number,
 	) {
 		this.isHovered = false;
+		this.color = color;
+		this.fontSize = fontSize;
 	}
 
 	// Method to render the button
 	render(context: CanvasRenderingContext2D) {
-		// Draw button with hover effect
-		context.fillStyle = this.isHovered ? '#44ff44' : '#ffffff';
-		context.fillRect(this.x, this.y, this.width, this.height);
+		// debug
+		// console.log("this.x", this.x)
+		// console.log("this.y", this.y)
+        // Draw the button rectangle
+        context.fillStyle = this.color;
+        context.fillRect(this.x, this.y, this.width, this.height);
+        context.fillStyle = 'white';
 
-		// Draw button text
-		context.fillStyle = '#000000';
-		context.font = '12px Arial';
-		context.fillText(
-			this.text,
-			this.x + this.width / 2 - context.measureText(this.text).width / 2,
-			this.y + this.height / 2 + 6,
-		);
-	}
+
+		context.fillStyle = this.color; // Blue button for continuing
+        context.fillRect(this.x, this.y, this.width, this.height);
+
+        context.shadowBlur = 0;  // Disable shadow for the outline
+        context.strokeStyle = 'black';
+        context.lineWidth = 3;  // Make the outline thick
+        context.strokeRect(this.x, this.y, this.width, this.height);
+
+
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+
+        context.font = `${this.fontSize * 0.04}px Arial`;
+        context.fillStyle = 'white';
+
+        // Draw the button text
+        context.fillStyle = 'white';
+        context.font = `${this.fontSize}px Arial`;
+
+        const textWidth = context.measureText(this.text).width;
+        const textX = this.x + (this.width - textWidth) / 2;
+        const textY = this.y + (this.height / 2) + (this.height * 0.1);
+        context.fillText(this.text, textX, textY,);
+    }
 
 	// Method to check if the mouse is hovering over the button
 	handleMouseMove(mouseX: number, mouseY: number, devicePixelRatio: number) {

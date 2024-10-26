@@ -101,24 +101,28 @@ export default class Bear extends Pet {
         this.currentSprite.update();
     }
 
-    render(context: CanvasRenderingContext2D) {
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
+        console.log(this.x, this.y);
         context.save(); // Save the current state of the canvas
-
+    
+        const screenX = this.x - cameraX;
+        const screenY = this.y - cameraY;
+    
         if (!this.movingRight) {
             // Flip the canvas horizontally when moving left
             context.scale(-1, 1);
-            // Adjust the x position because we flipped the canvas
-            this.currentSprite.render(context, -this.x - this.sprites[0].frameWidth * 2, this.y, 2);
+            // Adjust the x position because we flipped the canvas and incorporate camera position
+            this.currentSprite.render(context, -(screenX + this.sprites[0].frameWidth * 2), screenY, 2);
         } else {
-            // Render normally when moving right
-            this.currentSprite.render(context, this.x, this.y, 2);
+            // Render normally when moving right and incorporate camera position
+            this.currentSprite.render(context, screenX, screenY, 2);
         }
-
+    
         context.restore(); // Restore the canvas state to avoid affecting other elements
-
-        // Debug rectangle
-        // context.strokeStyle = 'red';
-        // context.strokeRect(this.x + this.sprites[0].frameWidth, this.y + this.sprites[0].frameHeight, this.width, this.height);
+    
+        // Debug rectangle (optional)
+        // context.strokeStyle = 'orange';
+        // context.strokeRect(screenX + this.sprites[0].frameWidth, screenY + this.sprites[0].frameHeight, this.width, this.height);
         // context.stroke();
     }
 }

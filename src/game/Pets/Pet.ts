@@ -79,13 +79,13 @@ class Pet {
         this.y += Math.sin(angle) * this.speed * delta;
 
         this.currentSprite.update();
-    }
+}
 
     public addUpgrade(upgradeFn: (pet: Pet) => void) {
         this.upgrades.push(upgradeFn);
     }
 
-    handleAttack(enemies: Enemy[], delta: number) {
+    handleAttack(enemies: Enemy[], _: number) {
         this.currentSprite = this.sprites[2]; // Attack animation sprite
         for (const enemy of enemies) {
             if (isColliding(this, enemy) && Math.hypot(enemy.x - this.x, enemy.y - this.y) < this.attackRange) {
@@ -97,8 +97,8 @@ class Pet {
         this.currentSprite.update();
     }
 
-    render(context: CanvasRenderingContext2D) {
-        this.currentSprite.render(context, this.x, this.y);
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
+        this.currentSprite.render(context, this.x - cameraX, this.y - cameraY);
     }
 }
 

@@ -19,10 +19,10 @@ export default class Crossbow extends Weapon {
     }
 
     // Update and render bullets
-    public update(deltaTime: number, context: CanvasRenderingContext2D) {
+    public update(deltaTime: number, context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         this.projectiles.forEach(projectile => {
             projectile.update(deltaTime);
-            projectile.render(context);
+            projectile.render(context, cameraX, cameraY);
         });
     }
 }

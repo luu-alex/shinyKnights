@@ -27,7 +27,7 @@ export default class SwordProjectile extends Projectile {
     }
 
     // Render the sword slash (this can be customized based on your design)
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {
             // Calculate the angle of rotation based on the direction
             const angle = Math.atan2(this.directionY, this.directionX);
@@ -36,7 +36,7 @@ export default class SwordProjectile extends Projectile {
 
             context.scale(0.25, 0.25);  // Scale the context to half size
             // Move the origin to the projectile's position
-            context.translate(this.x/ 0.25, this.y / 0.25);
+            context.translate(this.x - cameraX, this.y - cameraY);
 
             // Rotate the canvas around the current origin (the projectile's position)
             context.rotate(angle);

@@ -3,6 +3,8 @@ import Player from './Player'; // Assuming you have a Player class
 import FloatingDamage from '../HUD/FloatingDamage';
 import BleedingDamage from '../HUD/BleedingDamage';
 import { StatusEffect } from '../statusEffect/StatusEffect';
+import { isColliding } from '../utils';
+import Projectile from '../projectiles/Projectile';
 
 export default class Enemy {
     public x: number;
@@ -10,25 +12,35 @@ export default class Enemy {
     public hp: number;
     public maxHp: number;
     public speed: number;
-    private currentSprite: Sprite;
-    private idleSprite: Sprite;
-    private walkSprite: Sprite;
-    private attackSprite: Sprite;
+    public currentSprite: Sprite;
+    public idleSprite: Sprite;
+    public walkSprite: Sprite;
+    public attackSprite: Sprite;
     private deathSprite: Sprite;
     public isAlive: boolean;
-    private behavior: EnemyBehavior; // Current behavior (Patrolling, Chasing, Attacking)
+    public behavior: EnemyBehavior; // Current behavior (Patrolling, Chasing, Attacking)
     private patrolPoints: { x: number, y: number }[]; // Points for patrolling
     private currentPatrolPoint: number;
-    private player: Player; // Reference to the player
-    private attackRange: number; // Range within which the enemy will attack
-    private isFacingRight: boolean;
+    public player: Player; // Reference to the player
+    public attackRange: number; // Range within which the enemy will attack
+    public isFacingRight: boolean;
     private scale: number = 1;
     public width: number;
     public height: number;
-    private floatingDamage: FloatingDamage[] = [];
+    public floatingDamage: FloatingDamage[] = [];
     private statusEffects: StatusEffect[] = [];
     public bleedMultiplier: number = 0;
     public bleedMultipliers: BleedingDamage[] = [];
+    public speedMultiplier: number = 1;
+    public onHitCooldown: number = 0;
+    public name: string;
+    public isBuffed: boolean = false;
+    public buffSprite: Sprite;
+    public buffAnimationCompleted: boolean = false;
+    public isAttacking = false;
+
+
+
 
     constructor(
         idleSprite: Sprite,
@@ -44,7 +56,8 @@ export default class Enemy {
         patrolPoints: { x: number, y: number }[] = [],
         scale: number = 1,
         width: number = 32,
-        height: number = 32
+        height: number = 32,
+        name: string = "Enemy"
     ) {
         this.idleSprite = idleSprite;
         this.walkSprite = walkSprite;
@@ -66,16 +79,21 @@ export default class Enemy {
         this.scale = scale;
         this.width = width;
         this.height = height;
+        this.name = name
+        this.buffSprite = new Sprite('buffs/enemyAura2.png', 64, 64, 18, 100);
     }
 
     // Method for switching behavior based on conditions
-    private handleBehavior(deltaTime: number) {
+    public handleBehavior(deltaTime: number) {
+        if (!this.isAlive) return;
         const distanceToPlayer = this.calculateDistanceToPlayer();
 
         if (distanceToPlayer <= this.attackRange) {
             this.behavior = EnemyBehavior.Attacking;
-        } else if (distanceToPlayer <= 200) {
+            this.speedMultiplier = 0.5;
+        } else if (distanceToPlayer <= 3000) {
             this.behavior = EnemyBehavior.Chasing;
+            this.speedMultiplier = 1;
         } else if (this.patrolPoints.length > 0) {
             this.behavior = EnemyBehavior.Patrolling;
         } else {
@@ -90,7 +108,7 @@ export default class Enemy {
                 this.chasePlayer(deltaTime);
                 break;
             case EnemyBehavior.Attacking:
-                this.attack();
+                this.attack(deltaTime);
                 break;
             case EnemyBehavior.Idle:
             default:
@@ -117,14 +135,15 @@ export default class Enemy {
     // Chasing behavior - move towards the player
     private chasePlayer(deltaTime: number) {
         this.moveTowards(this.player.x, this.player.y, deltaTime);
+        if (!this.isAttacking)
         this.currentSprite = this.walkSprite; // Set walking animation
     }
 
     // Move towards a target point (common logic for patrolling and chasing)
     private moveTowards(targetX: number, targetY: number, deltaTime: number) {
         const angle = Math.atan2(targetY - this.y, targetX - this.x);
-        this.x += Math.cos(angle) * this.speed * deltaTime;
-        this.y += Math.sin(angle) * this.speed * deltaTime;
+        this.x += Math.cos(angle) * this.speed * deltaTime * this.speedMultiplier;
+        this.y += Math.sin(angle) * this.speed * deltaTime * this.speedMultiplier;
         if (targetX > this.x) {
             this.isFacingRight = true;  // Moving right
         } else if (targetX < this.x) {
@@ -147,26 +166,30 @@ export default class Enemy {
     }
 
     // Attacking behavior
-    public attack() {
-        this.currentSprite = this.attackSprite; // Play attack animation
+    public attack(deltaTime: number): void | Projectile[] {
+        // this.currentSprite = this.attackSprite; // Play attack animation
+        this.moveTowards(this.player.x, this.player.y, deltaTime);
         // Attack logic (e.g., reducing player's HP) can be implemented here
     }
 
     // Calculate distance to player for behavior decisions
-    private calculateDistanceToPlayer(): number {
+    public calculateDistanceToPlayer(): number {
         return this.calculateDistance(this.player.x, this.player.y);
     }
 
     // Utility function to calculate distance between two points
-    private calculateDistance(targetX: number, targetY: number): number {
+    public calculateDistance(targetX: number, targetY: number): number {
         const dx = this.x - targetX;
         const dy = this.y - targetY;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
     // Update method to handle behavior and movement
-    public update(deltaTime: number) {
-        if (!this.isAlive) return;
+    public update(deltaTime: number, _?: Enemy[]) {
+        if (!this.isAlive && !this.currentSprite.isLastFrame()) {
+            this.currentSprite.update();
+            return;
+        }
 
         this.statusEffects = this.statusEffects.filter(effect => !effect.isExpired());
         for (const effect of this.statusEffects) {
@@ -188,6 +211,24 @@ export default class Enemy {
             bleedMultiplier.update(deltaTime);
         }
         // add check death here
+        if (this.onHitCooldown > 0) {
+            this.onHitCooldown -= deltaTime;
+        }
+
+        if (isColliding(this.player, this) && this.onHitCooldown <= 0) {
+            this.player.hp -= 5;
+            console.log("Player HP: " + this.player.hp, "colliding");
+            this.onHitCooldown = 2;
+        }
+
+        if (this.isBuffed && !this.buffAnimationCompleted) {
+            this.buffSprite.update();
+
+            if (this.buffSprite.isLastFrame()) {
+                this.buffAnimationCompleted = true;
+            }
+        }
+        this.checkDeath();
 
         // Update sprite animations
         this.currentSprite.update();
@@ -200,39 +241,60 @@ export default class Enemy {
     }
 
     // Render method to draw the enemy on the canvas
-    public render(context: CanvasRenderingContext2D) {
-        if (!this.isAlive) return;
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
+        if (!this.isAlive && this.currentSprite.isLastFrame()) return;
         
-        // Save the current context state
         context.save();  
         
-        // Calculate the offset to adjust for the misalignment
-        const offsetX = this.currentSprite.frameWidth / 2;
-        const offsetY = this.currentSprite.frameHeight;
-        // Draw a debug rectangle of the enemy for collision visualization
-        // context.fillStyle = 'red';
-        // context.fillRect(this.x, this.y, this.width, this.height);
+        // Calculate the screen position relative to the camera
+        const screenX = this.x - cameraX;
+        const screenY = this.y - cameraY;
+        
+        // Calculate the scaled sprite dimensions
+        const scaledWidth = this.currentSprite.frameWidth * this.scale;
+        const scaledHeight = this.currentSprite.frameHeight * this.scale;
+        
+        // Calculate the top-left corner of the sprite based on its dimensions
+        const spriteX = screenX - scaledWidth / this.scale;  // Center the sprite horizontally
+        const spriteY = screenY - scaledHeight + this.height;  // Align bottom of the sprite with the bottom of the hitbox
     
+        // Draw a debug rectangle for the enemy's hitbox (optional for debugging)
+        // context.fillStyle = 'red';
+        // context.fillRect(spriteX + scaledWidth / 2 - this.width / 2, spriteY + scaledHeight - this.height, this.width, this.height);
+    
+        // Render buff if the enemy is buffed and animation isn't completed
+        if (this.isBuffed && !this.buffAnimationCompleted) {
+            this.buffSprite.render(context, spriteX, spriteY, 1);
+        }
+    
+        // Render the enemy sprite based on its facing direction
         if (!this.isFacingRight) {
             // Flip the context horizontally if the enemy is facing left
+            context.translate(screenX + this.width, screenY - scaledHeight/this.scale);
             context.scale(-1, 1);  
-            // Adjust rendering to account for the sprite's offset and direction
-            this.currentSprite.render(context, -(this.x + this.width + offsetX), this.y - offsetY, this.scale);
+            this.currentSprite.render(context, 0, 0, this.scale);
         } else {
             // Regular rendering when facing right
-            this.currentSprite.render(context, this.x - offsetX, this.y - offsetY, this.scale);
+            this.currentSprite.render(context, spriteX, spriteY, this.scale);
         }
     
         context.restore();  // Restore the context state
     
-        // Render floating damage
+        // Render floating damage (if applicable)
         for (const floatingDamage of this.floatingDamage) {
-            floatingDamage.render(context);
+            floatingDamage.render(context, cameraX, cameraY);
         }
         for (const bleedMultiplier of this.bleedMultipliers) {
-            bleedMultiplier.render(context);
+            bleedMultiplier.render(context, cameraX, cameraY);
         }
-    
+    }
+    public getCollisionBox() {
+        return {
+            x: this.x - this.width * 0.1,
+            y: this.y - this.height * 0.1,
+            width: this.width * 0.9,
+            height: this.height * 0.9
+        };
     }
     
 

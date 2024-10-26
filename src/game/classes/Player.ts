@@ -7,6 +7,7 @@ import Spear from '../weapon/Spear';
 // import Dagger from '../weapon/Dagger';
 import Skill from '../skills/Skill';
 import { findClosestEnemy } from '../utils'
+import ProjectileManager from '../projectiles/ProjectileManager';
 
 enum PlayerState {
     Idle,
@@ -29,9 +30,15 @@ export default class Player {
     public height: number;
     public level: number = 1;
     public skills: Skill[] = [];
+    public hp: number = 100;
+    public gold = 0;
+    public maxHP: number = 100;
+    public strength = 0;
+    public projectileManager: ProjectileManager;
+    
 
 
-    constructor(sprites: Sprite[], x: number, y: number, speed: number,) {
+    constructor(sprites: Sprite[], x: number, y: number, speed: number, projectileManager: ProjectileManager) {
         this.idleSprite = sprites[0];
         this.walkingSprite = sprites[1];
         this.dyingSprite = sprites[2];
@@ -45,12 +52,17 @@ export default class Player {
         this.currentWeapon = new Spear();
         this.width = 32;
         this.height = 32;
+        this.projectileManager = projectileManager;
 
     }
 
-    update(deltaTime: number) {
+    update(deltaTime: number, mapWidth: number, mapHeight: number) {
         this.x += this.joystickInput.x * this.speed * deltaTime;
         this.y += this.joystickInput.y * this.speed * deltaTime;
+
+        this.x = Math.max(0, Math.min(this.x, mapWidth - this.width));
+        this.y = Math.max(0, Math.min(this.y, mapHeight - this.height))
+
         this.handleAnimation();
 
         this.handleDirection();
@@ -68,18 +80,35 @@ export default class Player {
 
         if (closestEnemy) {
             const spawnPoint = this.getClosestEdgeToEnemy(closestEnemy);
-            return this.currentWeapon.attack(spawnPoint.x + this.width/2, spawnPoint.y + this.height, closestEnemy.x + closestEnemy.width/2, closestEnemy.y + closestEnemy.height/2);
+            return this.currentWeapon.attack(spawnPoint.x, spawnPoint.y, closestEnemy.x + closestEnemy.width/2, closestEnemy.y + closestEnemy.height/2);
         }
     }
-    render(context: CanvasRenderingContext2D) {
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         context.save();
+        
+        // Calculate the scaled width and height of the sprite
+        const scaledWidth = this.currentSprite.frameWidth * 2;
+        const scaledHeight = this.currentSprite.frameHeight * 2;
+        const screenX = this.x - cameraX;
+        const screenY = this.y - cameraY;
+    
         if (!this.isFacingRight) {
-            context.scale(-1, 1);  // Flip the context horizontally
-            this.currentSprite.render(context, -(this.x + this.currentSprite.frameWidth * 2), this.y, 2); // Adjust x position
+            context.translate(screenX, screenY);  // Move to the sprite center
+            context.scale(-1, 1);  // Flip horizontally
+            context.translate(-scaledWidth + scaledWidth/3, -scaledHeight / 2);  // Translate back by half width and height
+            
+            // Render the sprite after applying the transformations
+            this.currentSprite.render(context, 0, 0, 2); 
         } else {
-            this.currentSprite.render(context, this.x, this.y, 2); // Scale the sprite if needed
+            // Render the sprite normally when facing right
+            this.currentSprite.render(context, screenX - scaledWidth/3, screenY - scaledHeight/2, 2);
         }
+        
         context.restore();
+        
+        // Debug rectangle (optional)
+        // context.strokeStyle = 'red';
+        // context.strokeRect(screenX, screenY, this.width, this.height);
     }
     private handleAnimation() {
         switch (this.state) {

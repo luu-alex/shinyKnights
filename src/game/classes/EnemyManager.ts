@@ -3,13 +3,16 @@ import Player from './Player';
 import Sprite from '../Sprite';
 import SkeletonWarrior from './SkeletonWarrior';
 import { isColliding, resolveCollision } from '../utils';
+import ItemManager from './ItemManager';
 
 export default class EnemyManager {
     public enemies: Enemy[] = []; // Array to store enemies
     private player: Player;
+    private itemManager: ItemManager;
 
-    constructor(player: Player) {
+    constructor(player: Player, itemManager: ItemManager) {
         this.player = player;
+        this.itemManager = itemManager;
     }
 
     // Add a new enemy
@@ -48,8 +51,9 @@ export default class EnemyManager {
     // Update all enemies
     public update(deltaTime: number) {
         for (const enemy of this.enemies) {
-            enemy.update(deltaTime);
-            if (!enemy.isAlive) {
+            enemy.update(deltaTime, this.enemies);
+            if (!enemy.isAlive && enemy.currentSprite.isLastFrame()) {
+                this.itemManager.dropItem(enemy.x, enemy.y);
                 this.removeEnemy(enemy);
             }
         }
@@ -67,9 +71,9 @@ export default class EnemyManager {
     }
 
     // Render all enemies
-    public render(context: CanvasRenderingContext2D) {
+    public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         for (const enemy of this.enemies) {
-            enemy.render(context);
+            enemy.render(context, cameraX, cameraY);
         }
     }
 

@@ -1,5 +1,5 @@
 import Pet from './Pet';
-import Player from '../classes/Player';
+// import Player from '../classes/Player';
 import Enemy from '../classes/Enemy';
 
 class PetManager {
@@ -22,9 +22,9 @@ class PetManager {
     }
 
     // Render all pets
-    render(context: CanvasRenderingContext2D) {
+    render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         for (const pet of this.pets) {
-            pet.render(context);
+            pet.render(context, cameraX, cameraY);
         }
     }
 

@@ -7,6 +7,7 @@ export default class Sprite {
     private frameDuration: number;
     private elapsedTime: number;
     private row: number;
+    private column: number;
 
     constructor(
         imageSrc: string,
@@ -14,7 +15,8 @@ export default class Sprite {
         frameHeight: number,
         totalFrames: number,
         frameDuration: number, // Duration of each frame in milliseconds
-        row:number = 0
+        row:number = 0,
+        column: number = 0
     ) {
         this.image = new Image();
         this.image.src = imageSrc;
@@ -25,6 +27,7 @@ export default class Sprite {
         this.frameDuration = frameDuration;
         this.elapsedTime = 0;
         this.row = row;
+        this.column = column;
     }
 
     // Update the sprite's frame based on the elapsed time
@@ -39,7 +42,7 @@ export default class Sprite {
 
     // Render the current frame of the sprite on the canvas
     render(context: CanvasRenderingContext2D, x: number, y: number, scale = 1) {
-        const sourceX = this.currentFrame * this.frameWidth;
+        const sourceX = this.currentFrame * (this.frameWidth) + (this.column * this.totalFrames); // Adjust for column
 
         // Apply scaling by multiplying the frame width and height by the scale factor
         const scaledWidth = this.frameWidth * scale;
@@ -52,5 +55,9 @@ export default class Sprite {
             x, y, // Destination x, y
             scaledWidth, scaledHeight // Destination width, height
         );
+    }
+
+    public isLastFrame() {
+        return this.currentFrame === this.totalFrames - 1;
     }
 }
