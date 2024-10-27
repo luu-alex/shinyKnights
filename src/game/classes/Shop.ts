@@ -1,5 +1,5 @@
 import Player from "./Player";
-import { primaryColorBackground, lightBlueButton, darkGreenText, whiteText, darkerGreenBackground, lighterGreenBackground } from "../misc";
+import { primaryColorBackground, lightBlueButton, darkGreenText, whiteText, darkerGreenBackground, lighterGreenBackground } from "../colors";
 import { wrapText } from '../utils';
 import Sprite from "../Sprite";
 import { Button } from "../../components/Button";
@@ -11,21 +11,23 @@ import PetManager from "../Pets/PetManager";
 import Bear from "../Pets/Bear";
 import Bunny from "../Pets/Bunny";
 import Boar from "../Pets/Boar";
+import ItemManager from "./ItemManager";
+import "../fonts/fonts.module.css";
 export class Shop {
     private player: Player;
-    private itemsToBuy: { name: string, cost: number, description: string, sprite: Sprite, bought: boolean, scale?: number, translate?: { x: 0, y: 0} }[] = [];
+    private itemsToBuy: { name: string, cost: number, description: string, sprite: Sprite, bought: boolean, scale?: number, translate?: { x: number, y: number} }[] = [];
     private items: { name: string, cost: number, description: string, sprite: Sprite, bought: boolean, unique: boolean, scale?: number, translate?: { x: number, y: number} }[] = [
-        { name: "Worn out Shoes", cost: 0, description: "+3 speed", sprite: new Sprite('shopIcons/wornShoes.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Tooth Necklace", cost: 12, description: "+5 Pet Damage", sprite: new Sprite('shopIcons/toothNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Topaz", cost: 13, description: "+1 monster drop rate.", sprite: new Sprite('shopIcons/topaz.png', 16, 16, 1, 100), bought: false, unique: false},
-        { name: "Arthurs Sword?", cost: 0, description: "Skill: Summon Arthurs sword. Scales with Strength ", sprite: new Sprite('shopIcons/arthurSword.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Buckler", cost: 0, description: "+10 HP", sprite: new Sprite('shopIcons/buckler.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Saphire Necklace", cost: 0, description: "+2 Magic damage", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Lightning", cost: 0, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('items/coin.png', 9, 9, 1, 100), bought: false, unique: true },
+        { name: "Worn out Shoes", cost: 1, description: "+3 speed", sprite: new Sprite('shopIcons/wornShoes.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Tooth Necklace", cost: 2, description: "+5 Pet Damage", sprite: new Sprite('shopIcons/toothNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Topaz", cost: 3, description: "+1 monster drop rate.", sprite: new Sprite('shopIcons/topaz.png', 16, 16, 1, 100), bought: false, unique: false},
+        { name: "Arthurs Sword?", cost: 2, description: "Skill: Summon Arthurs sword. Scales with Strength ", sprite: new Sprite('shopIcons/arthurSword.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Buckler", cost: 1, description: "+10 HP", sprite: new Sprite('shopIcons/buckler.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Blue Necklace", cost: 0, description: "+2 Magic damage", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Lightning", cost: 0, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('shopIcons/lightningScroll.png', 16, 16, 1, 100), bought: false, unique: true },
         { name: "Holy Circle", cost: 0, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Witches Apple", cost: 13, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/Apple.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Witches Apple", cost: 13, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/apple.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "War Helmet", cost: 0, description: "+3 Strength. +10 HP", sprite: new Sprite('shopIcons/warHelmet.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Fireball", cost: 0, description: "A skill", sprite: new Sprite('items/coin.png', 9, 9, 1, 100), bought: false, unique: true },
+        { name: "Fireball", cost: 0, description: "A skill", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
         { name: "Bear", cost: 0, description: "A pet bear will fight for you!", sprite: new Sprite('pets/MiniBear.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.5, translate: { x: 0, y: -26 } },
         { name: "Bunny", cost: 0, description: "A bunny will help dig and find items for you!", sprite: new Sprite('pets/MiniBunny.png', 32, 32, 1, 100), bought: false, unique: true, scale: 2, translate: { x: 0, y: -32 } },
         { name: "Boar", cost: 0, description: "A boar that will charge at enemies and attack.", sprite: new Sprite('pets/MiniBoar.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.7, translate: { x: 0, y: -32 } },
@@ -39,11 +41,13 @@ export class Shop {
     private buyButtons: Button[] = [];
     private reRollButton: Button | null = null;
     private petManager: PetManager;
+    private itemManager: ItemManager;
 
-    constructor(player: Player, nextRound: () => void, petManager: PetManager) {
+    constructor(player: Player, nextRound: () => void, petManager: PetManager, itemManager: ItemManager) {
         this.player = player;
         this.nextRoundCallback = nextRound;
         this.petManager = petManager;
+        this.itemManager = itemManager;
     }
     public init(canvas: HTMLCanvasElement, devicePixelRatio: number) {
         this.canvas = canvas;
@@ -126,7 +130,7 @@ export class Shop {
         context.fill();
 
         context.fillStyle = whiteText;
-        context.font = `${canvasHeight * 0.02}px Arial`;
+        context.font = `700 ${canvasHeight * 0.0125}px DePixelHalbfett`;
         const textWidth = context.measureText(itemName).width;
 
         // Calculate the X position to center the text inside the box
@@ -211,7 +215,7 @@ export class Shop {
 
         // Render each line of the description
         context.fillStyle = whiteText;
-        context.font = `${canvasHeight * 0.018}px Arial`;
+        context.font = `${canvasHeight * 0.015}px depixel`;
 
         for (let i = 0; i < lines.length && i < 3; i++) { // Limit to 3 lines
             context.fillText(lines[i], descriptionX, descriptionY + i * lineHeight);
@@ -237,7 +241,7 @@ export class Shop {
         context.fill();
 
         context.fillStyle = whiteText;
-        context.font = `${canvasHeight * 0.02}px Arial`;
+        context.font = `${canvasHeight * 0.02}px depixel`;
         const textWidth = context.measureText("Buy: " + cost.toString()).width;
 
         // Calculate the X position to center the text inside the box
@@ -281,9 +285,9 @@ export class Shop {
         context.shadowOffsetY = 0;
 
         context.fillStyle = darkGreenText;
-        context.font = `${canvasHeight * 0.04}px Arial`;
+        context.font = `${canvasHeight * 0.04}px depixel`;
         context.fillText('Shop', shopX + shopWidth / 2 - canvasWidth*0.10, shopY + canvasHeight * 0.05);
-        context.fillText(`Gold: ${this.player.gold}`, shopX + canvasWidth*0.05, shopY + canvasHeight * 0.1);
+        // context.fillText(`Gold: ${this.player.gold}`, shopX + canvasWidth*0.05, shopY + canvasHeight * 0.1);
 
         // Layout for items: column-based display
         for (let i = 0; i < this.itemsToBuy.length; i++) {
@@ -296,33 +300,11 @@ export class Shop {
         }
         this.reRollButton?.render(context);
 
-        context.font = `${canvasHeight * 0.02}px Arial`;
+        context.font = `${canvasHeight * 0.02}px depixel`;
 
-        // Render "Continue" button at the bottom
-        // const continueButtonX = canvasWidth * 0.2;
-        // const continueButtonY = canvasHeight * 0.85;
-        // const continueButtonWidth = canvasWidth * 0.6;
-        // const continueButtonHeight = canvasHeight * 0.1;
 
         this.continueButton?.render(context);
         
-
-        // context.fillStyle = lightBlueButton; // Blue button for continuing
-        // context.fillRect(continueButtonX, continueButtonY, continueButtonWidth, continueButtonHeight);
-
-        // context.shadowBlur = 0;  // Disable shadow for the outline
-        // context.strokeStyle = 'black';
-        // context.lineWidth = 3;  // Make the outline thick
-        // context.strokeRect(continueButtonX, continueButtonY, continueButtonWidth, continueButtonHeight);
-
-
-        // context.shadowBlur = 0;
-        // context.shadowOffsetX = 0;
-        // context.shadowOffsetY = 0;
-
-        // context.font = `${canvasHeight * 0.04}px Arial`;
-        // context.fillStyle = 'white';
-        // context.fillText("Continue", continueButtonX + continueButtonWidth / 4, continueButtonY + continueButtonHeight / 1.5);
     }
 
     public handleInteraction(x: number, y: number, devicePixelRatio: number) {
@@ -390,7 +372,7 @@ export class Shop {
                 this.petManager.addPet(bear);
                 break; 
             case 'Bunny':
-                const bunny = new Bunny(this.player);
+                const bunny = new Bunny(this.player, this.itemManager);
                 this.petManager.addPet(bunny);
                 break;
             case 'Boar':

@@ -17,7 +17,7 @@ const CanvasGame: React.FC = () => {
     const [ currentScene, setCurrentScene ] = useState<string>('');
 	const [tonConnectUI, _] = useTonConnectUI();
 	const lastTimeRef = useRef<number>(0); // Use ref for tracking last frame time
-    const accumulatedTimeRef = useRef<number>(0); // Use ref for accumulating time
+    const canvasDimensions = useRef<{width: number, height: number}>({width:0, height: 0});
     
 	const fetchData = async () => {
 		const result = await axios.get('/api/data');
@@ -68,6 +68,8 @@ const CanvasGame: React.FC = () => {
 					newCanvasHeight = viewportWidth / aspectRatio;
 				}
 				console.log('new canvas sizes:', newCanvasWidth, newCanvasHeight);
+				
+				
 
 				canvas.style.width = `${newCanvasWidth}px`;
 				canvas.style.height = `${newCanvasHeight}px`;
@@ -78,6 +80,13 @@ const CanvasGame: React.FC = () => {
 				widthRef.current = canvas.width;
 
 				context.scale(devicePixelRatio, devicePixelRatio);
+				console.log("width",canvas.width)
+
+				// const canvasRect = canvas.getBoundingClientRect();
+				canvasDimensions.current = {
+					width: newCanvasWidth,
+					height: newCanvasHeight,
+				}
 
 				const menuScene = new MenuScene(sceneManagerRef.current);
                 sceneManagerRef.current.changeScene(menuScene, canvas, context);
@@ -94,10 +103,6 @@ const CanvasGame: React.FC = () => {
                     }
                     const delta = (time - lastTimeRef.current) / 1000; // delta time in seconds
 					lastTimeRef.current = time;
-
-                    // Accumulate the time that passed
-                    accumulatedTimeRef.current += delta;
-
 
 					context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
                     if (sceneManagerRef.current.currentScene) {
@@ -121,11 +126,16 @@ const CanvasGame: React.FC = () => {
 			}
 		}
 	}, []);
-	console.log(wallet);
 	return (
 		<div>
             {sceneManagerRef.current.currentScene && sceneManagerRef.current.currentScene.sceneName === 'MenuScene' ?
-			<TonConnectButton style={{ position: 'absolute', left: 0, top: 30 }} /> : <></>
+				<TonConnectButton
+					style={{
+						position: 'absolute',
+						top: canvasDimensions.current.height * 0.1, // Adjust relative to the canvas top position
+						left:  canvasDimensions.current.width * 0.90 - 165, // Adjust relative to the canvas left position
+					}}
+				/>: <></>
             }
 			{/* Wallet: {wallet ? <div>wallet.account </div>: ''} */}
 			<canvas ref={canvasRef} />

@@ -105,3 +105,41 @@ export function wrapText(context: CanvasRenderingContext2D, text: string, maxWid
     lines.push(line.trim()); // Push the last line
     return lines;
 }
+
+export function drawRoundedBox(
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+    fillColor: string
+) {
+    // Set the fill style to the desired color
+
+    context.strokeStyle = 'black';
+    context.lineWidth = 3;  // Make the outline thick
+
+    context.fillStyle = fillColor;
+
+    
+    // Begin a new path to draw the rounded box
+    context.beginPath();
+
+    // Start at the top-left corner and move around the box, drawing curves at each corner
+    context.moveTo(x + radius, y); // Top-left corner
+    context.lineTo(x + width - radius, y); // Top edge
+    context.quadraticCurveTo(x + width, y, x + width, y + radius); // Top-right corner curve
+    context.lineTo(x + width, y + height - radius); // Right edge
+    context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); // Bottom-right corner curve
+    context.lineTo(x + radius, y + height); // Bottom edge
+    context.quadraticCurveTo(x, y + height, x, y + height - radius); // Bottom-left corner curve
+    context.lineTo(x, y + radius); // Left edge
+    context.quadraticCurveTo(x, y, x + radius, y); // Top-left corner curve
+
+    // Close the path and fill the box
+    context.closePath();
+    context.fill();
+
+    context.stroke();
+}

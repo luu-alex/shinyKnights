@@ -1,0 +1,12 @@
+@font-face {
+    font-family: 'depixel';
+    src: url('./DePixelBreit.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'DePixelHalbfett';
+    src: url('./DePixelHalbfett.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}

@@ -12,17 +12,10 @@ import PetManager from '../Pets/PetManager';
 import HUD from '../HUD/Hud';
 import EnemySpawner from '../classes/EnemySpawner';
 
-// import { Fireball } from '../skills/Fireball';
-// import { LightningSkill } from '../skills/lightning';
-// import Arthur from '../skills/Arthur';
 // import { Guardian } from '../skills/Gaurdian';
 import ItemManager from '../classes/ItemManager';
 import { Shop } from '../classes/Shop';
-// import { HolyCircle } from '../skills/HolyCircle';
-// import SkeletonWarrior from '../classes/SkeletonWarrior';
-// import SkeletonMage from '../classes/SkeletonMage';
-// import Ghoul from '../classes/Ghoul';
-// import Banshee from '../classes/Banshee';
+import { Settings } from '../../components/Settings';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -30,8 +23,7 @@ export default class GameScene extends Scene {
 	private isRunning: boolean;
 	private devicePixelRatio: number;
 	private joystick: Joystick | null;
-	private pauseButton: ImageButton;
-    private deltaTime: number;
+	private pauseButton: ImageButton | null;
     private player: Player;
 	private enemyManager: EnemyManager;
 	private projectileManager: ProjectileManager;
@@ -48,14 +40,12 @@ export default class GameScene extends Scene {
 	private mapWidth = 3000;
 	private mapHeight = 2000;
 	private rock: Sprite;
-	private roundTime: number = 30;
+	private roundTime: number = 60;
 	private roundTimer: number = 2;
 	private currentRound: number = 1;
 	private shop: Shop;
 	private roundEnd: boolean = false;
-
-
-    
+	private settings: Settings | null = null;
 
 	constructor(game: any) {
 		super(game, 'gameScene');
@@ -65,8 +55,7 @@ export default class GameScene extends Scene {
 		this.sceneName = 'gameScene';
 		this.devicePixelRatio = window.devicePixelRatio || 1;
 		this.joystick = null; // Initialize joystick as null
-		this.pauseButton = new ImageButton(10, 30, 32, 32, 'pause1.png', this.pauseGame.bind(this));
-        this.deltaTime = 0;
+		this.pauseButton = null;
 
         const playerIdleSprite = new Sprite('characters/warden.png', 32, 32, 4, 100);
         const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
@@ -80,26 +69,12 @@ export default class GameScene extends Scene {
 		this.petManager = new PetManager();
 		this.enemySpawner = new EnemySpawner(this.enemyManager, this.player, 3, 50, 0.001);
 
-		this.shop = new Shop(this.player, this.startNewRound.bind(this), this.petManager);
+		this.shop = new Shop(this.player, this.startNewRound.bind(this), this.petManager, this.itemManager);
 
-		// const bunny = new Bunny(this.player);
-		// const boar = new Boar(this.player);
-		// this.petManager.addPet(bear);
-		// this.petManager.addPet(bunny);
-		// this.petManager.addPet(boar);
 		this.camera = new Camera(window.innerWidth, window.innerHeight, this.mapWidth, this.mapHeight);
-		// const holycircle = new HolyCircle(this.player);
-		// this.player.learnSkill(holycircle);
-		// const fireball = new Fireball(this.player, this.projectileManager);
-		// this.player.learnSkill(fireball);
-		// const lightning = 
-		// this.lightning = new LightningSkill(this.player);
-		// this.player.learnSkill(this.lightning);
 
 		// const guardian = new Guardian(this.player);
 		// this.player.learnSkill(guardian);
-		// const artur = new Arthur(this.player);
-		// this.player.learnSkill(artur);
 		this.flower1 = new Sprite('background/flower1.png', 10, 10, 1, 100);
 		this.flower2 = new Sprite('background/flower2.png', 10, 10, 1, 100);
 		this.flower3 = new Sprite('background/flower3.png', 10, 10, 1, 100);
@@ -113,9 +88,11 @@ export default class GameScene extends Scene {
 		this.canvas = canvas;
 		this.context = context;
 		this.isRunning = true;
-		console.log('canvas', this.canvas);
 		this.camera.canvasHeight = this.canvas.height / this.devicePixelRatio;
 		this.camera.canvasWidth = this.canvas.width / this.devicePixelRatio;
+		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused");
+
+		this.pauseButton = new ImageButton(this.camera.canvasWidth * 0.9, this.camera.canvasHeight * 0.1, 32, 32, 'ui/pauseIcon.png', this.pauseGame.bind(this));
 
         const joystickSizePercentage = 0.08;
         const baseRadius = Math.min(this.canvas.width, this.canvas.height) * joystickSizePercentage;
@@ -182,8 +159,7 @@ export default class GameScene extends Scene {
 
     public update(delta: number) {
 		if (this)
-		if(this.roundEnd) return;
-        this.deltaTime = delta;
+		if(this.roundEnd || this.settings?.isVisible) return;
         this.player.update(delta, 3000, 2000);
 		this.enemyManager.update(delta);
 		this.itemManager.update();
@@ -249,7 +225,9 @@ export default class GameScene extends Scene {
     }
 
 	private pauseGame() {
-        console.log("should transiction")
+		// this.settings?.show();
+
+		// this is exiting the game to menuScene
         const menuScene = new MenuScene(this.game);
         this.game.changeScene(menuScene, this.canvas!, this.context!);
 	}
@@ -258,10 +236,7 @@ export default class GameScene extends Scene {
 		if (!this.canvas || !this.joystick) return;
 
 		const { x, y } = this.getCoordinatesFromEvent(event);
-		if (this.shop.isVisible) {
-			this.shop.handleInteraction(x, y, this.devicePixelRatio);
-			return;  // Skip other interactions when the shop is open
-		}
+		
 
 		const heightBoundary = 0.5 * this.canvas.height / this.devicePixelRatio;
 		if (y > heightBoundary) {
@@ -283,6 +258,15 @@ export default class GameScene extends Scene {
 	// Unified event handler for both mouse and touch end
 	private handleInteractionEnd(event: MouseEvent | TouchEvent) {
         const { x, y } = this.getCoordinatesFromEvent(event);
+		if (this.shop.isVisible) {
+			this.shop.handleInteraction(x, y, this.devicePixelRatio);
+			return;  // Skip other interactions when the shop is open
+		}
+		if (this.settings && this.settings.isVisible) {
+			this.settings.exitButton.handleClick(x, y, this.devicePixelRatio);
+			return;
+		}
+		if (this.pauseButton)
         this.pauseButton.handleClick(x, y, this.devicePixelRatio);
 		if (!this.joystick) return;
 		this.joystick.endDrag();
@@ -318,15 +302,17 @@ export default class GameScene extends Scene {
 		this.renderBackground();
 
 		// Draw start button text
-		this.context.fillStyle = '#ffffff';
-		this.context.font = '12px Arial';
-		this.context.fillText("width w/o device pixel:" + this.canvas.width.toString(), this.canvas.width/this.devicePixelRatio - 200, 20);
-		this.context.fillText("height w/o device pixel:" + this.canvas.height.toString(), this.canvas.width/this.devicePixelRatio - 200, 60);
-		this.context.fillText("device pixel:" + this.devicePixelRatio, this.canvas.width/this.devicePixelRatio - 200, 100);
+		// DEBUG
+		// this.context.fillStyle = '#ffffff';
+		// this.context.font = '12px Arial';
+		// this.context.fillText("width w/o device pixel:" + this.canvas.width.toString(), this.canvas.width/this.devicePixelRatio - 200, 20);
+		// this.context.fillText("height w/o device pixel:" + this.canvas.height.toString(), this.canvas.width/this.devicePixelRatio - 200, 60);
+		// this.context.fillText("device pixel:" + this.devicePixelRatio, this.canvas.width/this.devicePixelRatio - 200, 100);
 
 		if (this.joystick) {
 			this.joystick.render(this.context, this.devicePixelRatio);
 		}
+		if (this.pauseButton)
 		this.pauseButton.render(this.context, this.devicePixelRatio);
         this.player.render(this.context, this.camera.x, this.camera.y);
 		this.enemyManager.render(this.context, this.camera.x, this.camera.y);
@@ -341,6 +327,8 @@ export default class GameScene extends Scene {
 		// this.lightning.render(this.context, 100, 100, this.devicePixelRatio);
 		if (this.shop.isVisible)
 		this.shop.render(this.context);
+		if (this.settings?.isVisible)
+		this.settings.render(this.context, this.devicePixelRatio);
 	}
 	private renderBackground() {
 		if (!this.context) return;

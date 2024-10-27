@@ -1,3 +1,4 @@
+import '../game/fonts/fonts.module.css';
 export class Button {
 	public isHovered: boolean;
 	private color: string;
@@ -42,16 +43,14 @@ export class Button {
         context.shadowOffsetX = 0;
         context.shadowOffsetY = 0;
 
-        context.font = `${this.fontSize * 0.04}px Arial`;
-        context.fillStyle = 'white';
 
         // Draw the button text
         context.fillStyle = 'white';
-        context.font = `${this.fontSize}px Arial`;
+        context.font = `${this.fontSize}px depixel`;
 
         const textWidth = context.measureText(this.text).width;
         const textX = this.x + (this.width - textWidth) / 2;
-        const textY = this.y + (this.height / 2) + (this.height * 0.1);
+        const textY = this.y + (this.height / 2) + (this.height * 0.15);
         context.fillText(this.text, textX, textY,);
     }
 

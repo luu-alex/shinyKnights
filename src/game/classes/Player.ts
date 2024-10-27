@@ -36,9 +36,7 @@ export default class Player {
     public strength = 0;
     public projectileManager: ProjectileManager;
     
-
-
-    constructor(sprites: Sprite[], x: number, y: number, speed: number, projectileManager: ProjectileManager) {
+    constructor(sprites: Sprite[], x: number, y: number, speed: number, projectileManager: ProjectileManager,) {
         this.idleSprite = sprites[0];
         this.walkingSprite = sprites[1];
         this.dyingSprite = sprites[2];

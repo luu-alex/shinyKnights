@@ -5,6 +5,7 @@ import GameScene from './GameScene';
 import { Button } from '../../components/Button';
 import { ImageButton } from '../../components/ImageButton';
 import  { AssetManager } from '../../assets/assetManager';
+import { Settings } from '../../components/Settings';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -13,8 +14,9 @@ export default class MenuScene extends Scene {
   private isRunning: boolean;
   public sceneName: 'MenuScene';
   private devicePixelRatio: number;
-  private pauseButton: ImageButton;
+  private settingButton: ImageButton | null = null;
   private assetsLoaded: boolean = false;
+  private settings: Settings | null = null;
 
   // Store bound event handlers
   private boundHandleMouseMove: (event: MouseEvent) => void;
@@ -27,8 +29,7 @@ export default class MenuScene extends Scene {
     this.isRunning = false; // Scene running state
     this.sceneName = 'MenuScene';
     this.devicePixelRatio = window.devicePixelRatio || 1;
-    this.startButton = new Button(150, 300, 150, 100, 'Start', this.startGame.bind(this), '#FFFFF');
-    this.pauseButton = new ImageButton(100, 100, 32, 32, 'pause1.png', this.pauseGame.bind(this));
+    this.startButton = new Button(150, 300, 150, 100, 'Start', this.startGame.bind(this), '#FFFFF', 32);
 
     this.boundHandleMouseMove = this.handleMouseMove.bind(this);
     this.boundHandleClick = this.handleClick.bind(this);
@@ -38,8 +39,13 @@ export default class MenuScene extends Scene {
     this.canvas = canvas;
     this.context = context;
     this.isRunning = true;
-    // context.scale(this.devicePixelRatio, this.devicePixelRatio);
-    console.log("canvas", this.canvas);
+
+    const canvasWidth = this.canvas.width / this.devicePixelRatio;
+    const canvasHeight = this.canvas.height / this.devicePixelRatio;
+
+    this.settings = new Settings(canvasWidth, canvasHeight);
+    
+    this.settingButton = new ImageButton(canvasWidth * 0.9, canvasHeight * 0.03, 32, 32, 'ui/settingIcon.png', this.openSettings.bind(this));
 
     // Add event listeners to handle interaction with the start button
     this.canvas.addEventListener('mousemove', this.boundHandleMouseMove);
@@ -94,13 +100,12 @@ export default class MenuScene extends Scene {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = (event.clientX - rect.left) * this.devicePixelRatio;
     const mouseY = (event.clientY - rect.top) * this.devicePixelRatio;
-    console.log("menu scene mouseX", mouseX);
-    console.log("menu scene mouseY", mouseY);
-    console.log(this.startButton.x * this.devicePixelRatio);
-    console.log(this.startButton.y * this.devicePixelRatio);
     // Check if the start button was clicked
     this.startButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
-    this.pauseButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    this.settingButton?.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    if (this.settings && this.settings.isVisible) {
+      this.settings.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    }
   }
 
   private startGame() {
@@ -115,23 +120,18 @@ export default class MenuScene extends Scene {
     }
   }
 
-  private pauseGame() {
-    console.log("pausing game");
-
+  private openSettings() {
+    if (!this.settings) return;
+    this.settings.show()
   }
 
   render() {
     if (!this.isRunning || !this.context || !this.canvas) return;
-
     // Clear the canvas
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.context.fillStyle = '#000000';
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    // Draw game title
-    this.context.fillStyle = '#FFFFFF';
-    this.context.font = '12px Arial';
-    this.context.fillText('My Game Title', this.canvas.width / 2 - 100, 100);
 
     // Draw start button
 
@@ -140,7 +140,10 @@ export default class MenuScene extends Scene {
     } else {
       // Draw start button
       this.startButton.render(this.context);
-      this.pauseButton.render(this.context, this.devicePixelRatio);
+    }
+    this.settingButton?.render(this.context, this.devicePixelRatio);
+    if (this.settings && this.settings.isVisible) {
+      this.settings.render(this.context, this.devicePixelRatio);
     }
 
     // Continue rendering in the next frame
