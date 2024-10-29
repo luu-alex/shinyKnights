@@ -2,6 +2,7 @@ import { SceneManager } from './SceneManager';
 export class Scene {
 	protected game: SceneManager;
   public sceneName: string;
+  public page: string = "menu";
 	constructor(game: SceneManager, sceneName: string) {
 		this.game = game;
     this.sceneName = sceneName

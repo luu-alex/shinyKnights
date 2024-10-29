@@ -3,8 +3,9 @@ import axios from 'axios';
 import MenuScene from './scenes/MenuScene';
 // import GameScene from './scenes/GameScene';
 import WebApp from '@twa-dev/sdk';
-import { TonConnectButton, useTonWallet, useTonConnectUI } from '@tonconnect/ui-react';
+import { useTonWallet, useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { SceneManager } from './scenes/SceneManager';
+import { lighterGreenBackground } from './colors';
 // move to gamescene later
 
 const CanvasGame: React.FC = () => {
@@ -34,6 +35,27 @@ const CanvasGame: React.FC = () => {
 	};
 	if (wallet) {
 	}
+	useEffect(() => {
+		// Set or update TonConnect UI options dynamically
+		tonConnectUI.uiOptions = {
+		  uiPreferences: {
+			theme: THEME.DARK, // Use dark theme, you can also use 'SYSTEM'
+			borderRadius: 's', // Small border radius,
+			colorsSet: {
+			  [THEME.DARK]: {
+				connectButton: {
+				  background: lighterGreenBackground,  // Custom background color for dark theme,
+				},
+			  },
+			  [THEME.LIGHT]: {
+				connectButton: {
+				  background: '#FF5722',  // Custom background color for light theme
+				},
+			  },
+			},
+		  },
+		};
+	  }, [tonConnectUI]);
 
 	useEffect(() => {
 		// const scale = (context: CanvasRenderingContext2D) => {
@@ -128,15 +150,15 @@ const CanvasGame: React.FC = () => {
 	}, []);
 	return (
 		<div>
-            {sceneManagerRef.current.currentScene && sceneManagerRef.current.currentScene.sceneName === 'MenuScene' ?
-				<TonConnectButton
+            {/* {sceneManagerRef.current.currentScene && sceneManagerRef.current.currentScene.sceneName === 'MenuScene' && sceneManagerRef.current.currentScene.page === 'menu'  ? */}
+				{/* <TonConnectButton
 					style={{
 						position: 'absolute',
-						top: canvasDimensions.current.height * 0.1, // Adjust relative to the canvas top position
-						left:  canvasDimensions.current.width * 0.90 - 165, // Adjust relative to the canvas left position
+						top: canvasDimensions.current.height * 0.11, // Adjust relative to the canvas top position
+						left:  canvasDimensions.current.width * 0.90 - 140, // Adjust relative to the canvas left position
 					}}
-				/>: <></>
-            }
+				/>: <></> */}
+            {/* } */}
 			{/* Wallet: {wallet ? <div>wallet.account </div>: ''} */}
 			<canvas ref={canvasRef} />
 			<button onClick={() => tonConnectUI.sendTransaction(transaction)}>Send transaction</button>

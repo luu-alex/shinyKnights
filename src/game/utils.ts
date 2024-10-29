@@ -113,12 +113,14 @@ export function drawRoundedBox(
     width: number,
     height: number,
     radius: number,
-    fillColor: string
+    fillColor: string,
+    lineWidth: number = 3,
+    bottomEdge: boolean = false
 ) {
     // Set the fill style to the desired color
 
     context.strokeStyle = 'black';
-    context.lineWidth = 3;  // Make the outline thick
+    context.lineWidth = lineWidth;  // Make the outline thick
 
     context.fillStyle = fillColor;
 
@@ -136,10 +138,18 @@ export function drawRoundedBox(
     context.quadraticCurveTo(x, y + height, x, y + height - radius); // Bottom-left corner curve
     context.lineTo(x, y + radius); // Left edge
     context.quadraticCurveTo(x, y, x + radius, y); // Top-left corner curve
-
     // Close the path and fill the box
     context.closePath();
     context.fill();
 
     context.stroke();
+    if (bottomEdge) {
+        // Draw the thicker bottom line
+        context.beginPath();
+        context.moveTo(x, y + height); // Start at bottom-left
+        context.lineTo(x + width, y + height); // Draw to bottom-right
+        context.lineWidth = 3; // Set the custom line width for bottom line
+        context.strokeStyle = 'black'; // Define color for the bottom line
+        context.stroke(); // Apply the bottom line stroke
+    }
 }

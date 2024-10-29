@@ -90,9 +90,9 @@ export default class GameScene extends Scene {
 		this.isRunning = true;
 		this.camera.canvasHeight = this.canvas.height / this.devicePixelRatio;
 		this.camera.canvasWidth = this.canvas.width / this.devicePixelRatio;
-		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused");
+		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused", this.exitGame.bind(this));
 
-		this.pauseButton = new ImageButton(this.camera.canvasWidth * 0.9, this.camera.canvasHeight * 0.1, 32, 32, 'ui/pauseIcon.png', this.pauseGame.bind(this));
+		this.pauseButton = new ImageButton(0.87,0.1, 0.1, 0.05, 'ui/pauseIcon.png', this.pauseGame.bind(this));
 
         const joystickSizePercentage = 0.08;
         const baseRadius = Math.min(this.canvas.width, this.canvas.height) * joystickSizePercentage;
@@ -225,12 +225,14 @@ export default class GameScene extends Scene {
     }
 
 	private pauseGame() {
-		// this.settings?.show();
-
+		this.settings?.show();
+	}
+	private exitGame() {
 		// this is exiting the game to menuScene
         const menuScene = new MenuScene(this.game);
         this.game.changeScene(menuScene, this.canvas!, this.context!);
 	}
+
 	private handleInteractionStart(event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // Prevents scrolling/zooming on touch devices
 		if (!this.canvas || !this.joystick) return;
@@ -263,11 +265,12 @@ export default class GameScene extends Scene {
 			return;  // Skip other interactions when the shop is open
 		}
 		if (this.settings && this.settings.isVisible) {
-			this.settings.exitButton.handleClick(x, y, this.devicePixelRatio);
+			this.settings.exitButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
+			this.settings.homeButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
 			return;
 		}
 		if (this.pauseButton)
-        this.pauseButton.handleClick(x, y, this.devicePixelRatio);
+        this.pauseButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
 		if (!this.joystick) return;
 		this.joystick.endDrag();
 	}
@@ -313,7 +316,7 @@ export default class GameScene extends Scene {
 			this.joystick.render(this.context, this.devicePixelRatio);
 		}
 		if (this.pauseButton)
-		this.pauseButton.render(this.context, this.devicePixelRatio);
+		this.pauseButton.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
         this.player.render(this.context, this.camera.x, this.camera.y);
 		this.enemyManager.render(this.context, this.camera.x, this.camera.y);
 		this.projectileManager.render(this.context, this.camera.x, this.camera.y);
@@ -328,7 +331,7 @@ export default class GameScene extends Scene {
 		if (this.shop.isVisible)
 		this.shop.render(this.context);
 		if (this.settings?.isVisible)
-		this.settings.render(this.context, this.devicePixelRatio);
+		this.settings.render(this.context);
 	}
 	private renderBackground() {
 		if (!this.context) return;

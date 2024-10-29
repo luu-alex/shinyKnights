@@ -6,19 +6,23 @@ export class Settings {
     private canvasWidth: number;
     private canvasHeight: number;
     public exitButton: ImageButton;
+    public homeButton: ImageButton;
     private title: string;
-    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings') {
+    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', homeFN: () => void) {
         this.isVisible = false;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.title = title;
-        this.exitButton = new ImageButton(this.canvasWidth * 0.8, this.canvasHeight * 0.21, 32, 32, 'ui/closeIcon.png', this.hide.bind(this));
+        this.exitButton = new ImageButton(0.8, 0.21, 0.1, 0.06, 'ui/closeIcon.png', this.hide.bind(this));
+        
+        this.homeButton = new ImageButton(0.425, 0.7, 0.1, 0.06, 'ui/homeIcon.png', homeFN.bind(this));
     }
-    render(context: CanvasRenderingContext2D, devicePixelRatio: number) {
+    render(context: CanvasRenderingContext2D) {
         // Draw the settings box
         drawRoundedBox(context, this.canvasWidth * 0.1, this.canvasHeight * 0.2, this.canvasWidth * 0.8, this.canvasHeight * 0.6, 5, primaryColorBackground);
         // Draw exit button
-        this.exitButton.render(context, devicePixelRatio);
+        this.exitButton.render(context, this.canvasWidth, this.canvasHeight);
+        this.homeButton.render(context, this.canvasWidth, this.canvasHeight);
         
         context.fillStyle = darkGreenText;
         context.font = `${this.canvasHeight*0.05}px depixel`;

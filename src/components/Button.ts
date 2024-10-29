@@ -3,6 +3,7 @@ export class Button {
 	public isHovered: boolean;
 	private color: string;
 	private fontSize: number;
+	private fontColor = 'white';
 
 	constructor(
 		public x: number,
@@ -13,10 +14,14 @@ export class Button {
 		private onClick: () => void,
 		color: string,
 		fontSize: number,
+		fontColor?: string,
 	) {
 		this.isHovered = false;
 		this.color = color;
 		this.fontSize = fontSize;
+		if (fontColor) {
+			this.fontColor = fontColor;
+		}
 	}
 
 	// Method to render the button
@@ -45,7 +50,7 @@ export class Button {
 
 
         // Draw the button text
-        context.fillStyle = 'white';
+        context.fillStyle = this.fontColor;
         context.font = `${this.fontSize}px depixel`;
 
         const textWidth = context.measureText(this.text).width;

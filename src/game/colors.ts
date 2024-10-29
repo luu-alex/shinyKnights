@@ -9,3 +9,10 @@ export const darkBlueText ="#0e3650";
 export const whiteText = "#ffffff";
 export const darkGold = "#6C5F45";
 export const lightGold = "#EFCB55";
+export const blueBackground = "#A4F1FF";
+export const primaryBrownBackground = "#9A5B38"
+export const redText = "#E64539";
+export const redBackground ="#4B130F";
+export const customizeBackground = "#7bb6bf";
+export const darkBrownBackground = "#3d1f0b";    
+// create menu, add blue colors
