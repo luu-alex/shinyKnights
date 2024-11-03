@@ -11,6 +11,13 @@ import { MenuHeader } from '../../components/MenuHeader';
 import { Footer } from '../../components/Footer';
 import { CustomizationComponent } from '../../components/CustomizationComponent';
 import { ShopComponent } from '../../components/ShopComponent';
+import { UsernameComponent } from '../../components/UsernameComponent';
+import { BuyGemsComponent } from '../../components/BuyGemsComponent';
+import { OrderComponent } from '../../components/OrderComponent';
+import { LoadingComponent } from '../../components/LoadingComponent';
+import { orderStatus, createOrder } from '../../apiCalls/aeonCalls';
+import { PurchasedGemsComponent } from '../../components/purchasedGemsComponent';
+import { InventoryComponent } from '../../components/InventoryComponent';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -24,10 +31,22 @@ export default class MenuScene extends Scene {
   private menuHeader: MenuHeader | null = null;
   private playButton: Button | null = null;
   private footer: Footer | null = null;
-	private mode: "menu" | "shop" | "customize" |"inventory" = "menu"
+	private mode: "menu" | "shop" | "customize" |"inventory" | "gemShop" = "menu"
   private customizeComponent: CustomizationComponent | null = null;
   private shopComponent: ShopComponent | null = null;
   private lastTouchY: number | null = null;  // For tracking touch movement for shop scrolling
+  public coins: number = 0;
+  public gems: number = 0;
+  public level: number = 1;
+  public username: string = "Player";
+  private usernameComponent : UsernameComponent | null = null;
+  private purchaseGemsButton: ImageButton | null = null;
+  private buyGemsComponent: BuyGemsComponent | null = null;
+  private orderComponent: OrderComponent | null = null;
+  private isLoading: boolean = false;
+  private LoadingComponent: LoadingComponent | null = null;
+  private purchasedGemsComponent: PurchasedGemsComponent | null = null;
+  private InventoryComponent: InventoryComponent | null = null;
 
 
   private boundHandleClick: (event: MouseEvent) => void;
@@ -58,9 +77,12 @@ export default class MenuScene extends Scene {
     const canvasWidth = this.canvas.width / this.devicePixelRatio;
     const canvasHeight = this.canvas.height / this.devicePixelRatio;
 
-    this.settings = new Settings(canvasWidth, canvasHeight, 'Settings', () => {});
+    this.settings = new Settings(canvasWidth, canvasHeight, 'Settings', () => {}, () => {this.page = "menu"});
+    this.buyGemsComponent = new BuyGemsComponent(canvasWidth, canvasHeight, () => {this.page = "menu"}, this.handleBuyingGems.bind(this));
+    this.orderComponent = new OrderComponent(canvasWidth, canvasHeight, () => {this.page = "menu"},  this.verifyOrder.bind(this));
     
     this.settingButton = new ImageButton(0.87,0.025, 0.1, 0.06, 'ui/settingIcon.png', this.openSettings.bind(this));
+    this.purchaseGemsButton = new ImageButton(0.6,0.05, 0.05, 0.03, 'ui/greenlightplus.png', this.openGems.bind(this));
     this.playButton = new Button(
       canvasWidth * 0.2,
       canvasHeight * 0.75,
@@ -71,11 +93,15 @@ export default class MenuScene extends Scene {
       lightBlueButton,
       canvasHeight * 0.04,
       "black",
-  );
-  this.customizeComponent = new CustomizationComponent(canvasWidth, canvasHeight);
-    this.menuHeader = new MenuHeader(canvasWidth, canvasHeight);
+    );
+    this.LoadingComponent = new LoadingComponent(canvasWidth, canvasHeight);
+    this.usernameComponent = new UsernameComponent();
+    this.customizeComponent = new CustomizationComponent(canvasWidth, canvasHeight);
+      this.menuHeader = new MenuHeader(canvasWidth, canvasHeight);
     this.footer = new Footer(canvasWidth, canvasHeight, this.changePage.bind(this));
     this.shopComponent = new ShopComponent(canvasWidth, canvasHeight);
+    this.purchasedGemsComponent = new PurchasedGemsComponent(canvasWidth, canvasHeight);
+    this.InventoryComponent = new InventoryComponent(canvasWidth, canvasHeight);
 
     // Add event listeners to handle interaction with the start button
     this.canvas.addEventListener('click', this.boundHandleClick);
@@ -113,19 +139,7 @@ export default class MenuScene extends Scene {
     console.log("All assets loaded");
     this.render(); // Re-render to update the UI
   }
-
-  // private handleMouseMove(event: MouseEvent) {
-  //   if (!this.canvas) return;
-
-  //   const rect = this.canvas.getBoundingClientRect();
-  //   const mouseX = (event.clientX - rect.left) * this.devicePixelRatio;
-  //   const mouseY = (event.clientY - rect.top) * this.devicePixelRatio;
-
-  //   // Check if mouse is over the button
-  //   this.render();
-  // }
   public changePage (name: string)  {
-    console.log(this.page)
     this.page = name;
   }
 
@@ -169,17 +183,64 @@ export default class MenuScene extends Scene {
     const mouseX = (event.clientX - rect.left) * this.devicePixelRatio;
     const mouseY = (event.clientY - rect.top) * this.devicePixelRatio;
     // Check if the start button was clicked
-    this.playButton?.handleClick(mouseX, mouseY, this.devicePixelRatio);
-    this.settingButton?.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+    if (this.isLoading) return;
+    if (this.page === 'menu') {
+      this.playButton?.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      this.settingButton?.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+    } 
+    this.purchaseGemsButton?.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+    if (this.page === "gemShop" && this.buyGemsComponent?.isVisible) {
+      this.buyGemsComponent?.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+      this.buyGemsComponent?.buy1000GemsButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      this.buyGemsComponent.buy500GemsButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    }
+    if (this.page === "pendingOrders") {
+      this.orderComponent?.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+      this.orderComponent?.purchaseButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      this.orderComponent?.verifyButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    };
+    if (this.page === "invetory") {
+      // this.InventoryComponent?.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+    }
     if (this.settings && this.settings.isVisible) {
       this.settings.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
       return;
     }
-    console.log(mouseX, mouseY);
+    if (this.purchasedGemsComponent && this.purchasedGemsComponent.isVisible) {
+      this.purchasedGemsComponent.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      return;
+    }
     const clicked = this.footer?.handleClick(mouseX / this.devicePixelRatio, mouseY / this.devicePixelRatio);
     if (clicked) {
       this.mode = clicked;
     }
+  }
+
+  private async handleBuyingGems(amount: number) {
+    this.isLoading = true;
+    this.page = "menu"
+    const response = await createOrder(this.username, amount)
+    console.log("handlebuying gems response", response)
+    if (response && this.orderComponent) {
+      this.orderComponent.callBackURL = response.model.webUrl || response.merchantURL;
+    }
+    this.isLoading = false;
+    this.page = "pendingOrders"
+  }
+
+  private async verifyOrder() {
+    this.isLoading = true;
+    this.page = "menu"
+    const response = await orderStatus(this.username)
+    console.log("VERIFYING order", response)
+    if (response.model.orderStatus === "COMPLETED") {
+      // need to update the profile
+      this.gems += 100;
+      this.page = "purchasedGems";
+    } else {
+      this.page = "orderFailed";
+    }
+    this.isLoading = false;
   }
 
   private startGame() {
@@ -199,6 +260,12 @@ export default class MenuScene extends Scene {
     this.settings.show()
     this.page = "settings"
   }
+  private openGems() {
+    if (!this.buyGemsComponent) return;
+    console.log("showing gems")
+    this.buyGemsComponent.show()
+    this.page = "gemShop"
+  }
 
   render() {
     if (!this.isRunning || !this.context || !this.canvas) return;
@@ -206,12 +273,11 @@ export default class MenuScene extends Scene {
     this.context.fillStyle = blueBackground;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw start button
-
     if (!this.assetsLoaded) {
       this.context.fillText('Loading assets...', this.canvas.width / 2 - 50, 600);
     } else {
       if (this.mode === "menu")
+      this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username);
       this.playButton?.render(this.context);
     }
 
@@ -223,7 +289,17 @@ export default class MenuScene extends Scene {
       this.shopComponent?.render(this.context);
     }
     // create header
-    this.menuHeader?.render(this.context);
+    this.menuHeader?.render(this.context, this.coins, this.gems, this.level);
+    this.purchaseGemsButton?.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
+    if (this.page === "gemShop" && this.buyGemsComponent?.isVisible) {
+      this.buyGemsComponent?.render(this.context);
+    }
+    if (this.page === "pendingOrders") {
+      this.orderComponent?.render(this.context);
+    }
+    if (this.page === "inventory") {
+      this.InventoryComponent?.render(this.context);
+    };
 
     this.footer?.render(this.context);
     this.settingButton?.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
@@ -231,9 +307,14 @@ export default class MenuScene extends Scene {
     if (this.settings && this.settings.isVisible) {
       this.settings.render(this.context);
     }
+    if (this.isLoading && this.LoadingComponent) {
+      this.LoadingComponent.render(this.context);
+    }
+    if (this.page === "purchasedGems" && this.purchasedGemsComponent) {
+      this.purchasedGemsComponent?.render(this.context);
+    }
 
-
-    // Continue rendering in the next frame
+    
   }
 
   destroy() {

@@ -11,18 +11,19 @@ export class MenuHeader {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight
     }
-    render(context: CanvasRenderingContext2D) {
+    render(context: CanvasRenderingContext2D, coins: number, gems: number, level: number) {
         drawRoundedBox(context, this.canvasWidth * 0.0, this.canvasHeight * 0, this.canvasWidth, this.canvasHeight * 0.1, 5, primaryBrownBackground, 2, true);
         // render coins
         // fill rect
         
-        this.renderCoins(context, 100);
-        this.renderGems(context, 100);
-        this.renderLevel(context);
+        this.renderCoins(context, coins);
+        this.renderGems(context, gems);
+        this.renderLevel(context, level);
     }
 
     renderCoins(context: CanvasRenderingContext2D, coins: number) {
         // Render the coin sprite
+        
 
         context.fillStyle = darkGold;
         drawRoundedBox(context, this.canvasWidth * 0.30, this.canvasHeight * 0.035, this.canvasWidth * 0.25, this.canvasHeight * 0.03, 5, darkGold, 2, true);
@@ -75,7 +76,7 @@ export class MenuHeader {
         context.fillText(gemText, centeredX, this.canvasHeight * 0.059);
     };
 
-    renderLevel(context: CanvasRenderingContext2D) {
+    renderLevel(context: CanvasRenderingContext2D, level: number) {
         // Define circle properties
         const circleRadius = this.canvasHeight * 0.03; // Adjust the size based on canvas height
         const circleX = this.canvasWidth * 0.1;  // X position for the circle
@@ -96,7 +97,7 @@ export class MenuHeader {
         context.font = `${this.canvasHeight * 0.03}px depixel`;
 
         // Render the level number inside the circle
-        context.fillText("3", circleX - this.canvasWidth * 0.015, circleY + this.canvasWidth * 0.02);
+        context.fillText(level.toString(), circleX - this.canvasWidth * 0.015, circleY + this.canvasWidth * 0.02);
     }
     private calculateScale(sprite: Sprite, maxWidth: number, maxHeight: number): number {
         const widthScale = maxWidth / sprite.frameWidth;

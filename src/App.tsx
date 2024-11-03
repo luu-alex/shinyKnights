@@ -3,7 +3,6 @@ import { THEME, TonConnectUIProvider } from '@tonconnect/ui-react';
 import { useEffect } from 'react';
 import './App.css';
 import CanvasGame from './game/CanvasGame';
-import axios from 'axios';
 
 WebApp.ready();
 WebApp.expand();
@@ -15,11 +14,6 @@ function App() {
 		// const webHeight = WebApp.viewportStableHeight;
 		// setHeight(webHeight);
 	});
-	const fetchData = async () => {
-		axios.get('http://localhost:5001/api/data').then(res => {
-			console.log(res);
-		});
-	};
 
 	return (
 		<TonConnectUIProvider
@@ -125,7 +119,6 @@ function App() {
 		>
 			{/* {height ? <div> Height: {height}</div> : null} */}
 			<CanvasGame />
-			<button onClick={fetchData}> fetch</button>
 		</TonConnectUIProvider>
 	);
 }

@@ -106,6 +106,18 @@ export function wrapText(context: CanvasRenderingContext2D, text: string, maxWid
     return lines;
 }
 
+export function drawCenteredText(context: CanvasRenderingContext2D, text: string, centerX: number, y: number) {
+    // Measure the width of the text
+    const textMetrics = context.measureText(text);
+    const textWidth = textMetrics.width;
+
+    // Calculate the x-coordinate to start the text to make it centered
+    const startX = centerX - (textWidth / 2);
+
+    // Draw the text
+    context.fillText(text, startX, y);
+}
+
 export function drawRoundedBox(
     context: CanvasRenderingContext2D,
     x: number,

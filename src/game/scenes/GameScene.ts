@@ -90,7 +90,7 @@ export default class GameScene extends Scene {
 		this.isRunning = true;
 		this.camera.canvasHeight = this.canvas.height / this.devicePixelRatio;
 		this.camera.canvasWidth = this.canvas.width / this.devicePixelRatio;
-		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused", this.exitGame.bind(this));
+		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused", this.exitGame.bind(this), () => {});
 
 		this.pauseButton = new ImageButton(0.87,0.1, 0.1, 0.05, 'ui/pauseIcon.png', this.pauseGame.bind(this));
 

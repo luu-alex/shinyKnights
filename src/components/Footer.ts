@@ -1,5 +1,5 @@
 import Sprite from "../game/Sprite";
-import { primaryColorBackground } from "../game/colors";
+import { activeGreenBackground, primaryColorBackground } from "../game/colors";
 
 class FooterButtons {
     public x: number
@@ -7,17 +7,23 @@ class FooterButtons {
     public width: number
     public height: number
     private sprite: Sprite;
+    public active: boolean = false;
 
-    constructor(x: number, y: number, width: number, height: number, sprite: Sprite) {
+    constructor(x: number, y: number, width: number, height: number, sprite: Sprite, active: boolean = false) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.sprite = sprite;
+        this.active = active
     }
 
     render(context: CanvasRenderingContext2D) {
-        context.fillStyle = primaryColorBackground;
+        if (this.active) {
+            context.fillStyle = activeGreenBackground;
+        } else {
+            context.fillStyle = primaryColorBackground;
+        }
         context.fillRect(this.x, this.y, this.width, this.height);
         // create lines to seperate the buttons
         context.beginPath();
@@ -65,7 +71,7 @@ export class Footer {
         this.changePage = changePage;
         this.shoppingButton = new FooterButtons(0, this.canvasHeight * 0.9, this.canvasWidth * 0.25, this.canvasHeight * 0.1, new Sprite('ui/shoppingIcon.png', 65, 50, 1, 100));
         
-        this.HomeButton = new FooterButtons(this.canvasWidth * 0.25, this.canvasHeight * 0.9, this.canvasWidth * 0.25, this.canvasHeight * 0.1, new Sprite('ui/homeIcon.png', 55, 50, 1, 100));
+        this.HomeButton = new FooterButtons(this.canvasWidth * 0.25, this.canvasHeight * 0.9, this.canvasWidth * 0.25, this.canvasHeight * 0.1, new Sprite('ui/homeIcon.png', 55, 50, 1, 100), true);
         this.playerButton = new FooterButtons(this.canvasWidth * 0.5, this.canvasHeight * 0.9, this.canvasWidth * 0.25, this.canvasHeight * 0.1, new Sprite('ui/playerIcon.png', 55, 50, 1, 100));
         this.inventoryButton = new FooterButtons(this.canvasWidth * 0.75, this.canvasHeight * 0.9, this.canvasWidth * 0.25, this.canvasHeight * 0.1, new Sprite('ui/inventoryIcon.png', 60, 50, 1, 100));
 
@@ -89,23 +95,39 @@ export class Footer {
     }
     handleClick(mouseX: number, mouseY: number): "menu" | "customize" | "shop" | "inventory" | undefined {
         const home = this.HomeButton.handleClick(mouseX, mouseY, "menu");
+        const player = this.playerButton.handleClick(mouseX, mouseY, "customize");
+        const shop = this.shoppingButton.handleClick(mouseX, mouseY, "shop");
+        const inventory = this.inventoryButton.handleClick(mouseX, mouseY, "inventory");
         if (home) {
             this.changePage(home);
+            this.HomeButton.active = true;
+            this.playerButton.active = false;
+            this.shoppingButton.active = false;
+            this.inventoryButton.active = false;
             return "menu";
         }
-        const player = this.playerButton.handleClick(mouseX, mouseY, "customize");
         if (player) {
             this.changePage(player);
+            this.playerButton.active = true;
+            this.HomeButton.active = false;
+            this.shoppingButton.active = false;
+            this.inventoryButton.active = false;
             return "customize";
         }
-        const shop = this.shoppingButton.handleClick(mouseX, mouseY, "shop");
         if (shop) {
             this.changePage(shop);
+            this.shoppingButton.active = true;
+            this.HomeButton.active = false;
+            this.playerButton.active = false;
+            this.inventoryButton.active = false;
             return "shop";
         }
-        const inventory = this.inventoryButton.handleClick(mouseX, mouseY, "inventory");
         if (inventory) {
             this.changePage(inventory);
+            this.inventoryButton.active = true;
+            this.HomeButton.active = false;
+            this.shoppingButton.active = false;
+            this.playerButton.active = false;
             return "inventory";
         }
     }

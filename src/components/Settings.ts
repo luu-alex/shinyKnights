@@ -7,13 +7,15 @@ export class Settings {
     private canvasHeight: number;
     public exitButton: ImageButton;
     public homeButton: ImageButton;
+    private handleExit: () => void;
     private title: string;
-    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', homeFN: () => void) {
+    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', homeFN: () => void, handleExit: () => void) {
         this.isVisible = false;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.title = title;
         this.exitButton = new ImageButton(0.8, 0.21, 0.1, 0.06, 'ui/closeIcon.png', this.hide.bind(this));
+        this.handleExit = handleExit;
         
         this.homeButton = new ImageButton(0.425, 0.7, 0.1, 0.06, 'ui/homeIcon.png', homeFN.bind(this));
     }
@@ -44,5 +46,8 @@ export class Settings {
     // Hide the shop
     public hide() {
         this.isVisible = false;
+        if (this.title === "Settings") {
+            this.handleExit();
+        }
     }
 };

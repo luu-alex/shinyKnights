@@ -42,6 +42,7 @@ export default class Sprite {
 
     // Render the current frame of the sprite on the canvas
     render(context: CanvasRenderingContext2D, x: number, y: number, scale = 1) {
+        context.imageSmoothingEnabled = false;
         const sourceX = this.currentFrame * (this.frameWidth) + (this.column * this.totalFrames); // Adjust for column
 
         // Apply scaling by multiplying the frame width and height by the scale factor
