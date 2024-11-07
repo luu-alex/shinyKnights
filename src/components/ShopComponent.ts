@@ -1,5 +1,9 @@
+import Sprite from "../game/Sprite";
 import { blueBackground, darkBlueText, darkerGreenBackground, lighterGreenBackground, primaryColorBackground } from "../game/colors";
-import { drawRoundedBox } from "../game/utils";
+import { ShopItem } from "../game/types";
+import { drawRoundedBox, getSprite } from "../game/utils";
+import { ShopItemComponent } from "./ShopItemComponent";
+import { buyItem } from "../apiCalls/serverCalls";
 
 export class ShopComponent {
     private canvasWidth: number;
@@ -7,12 +11,31 @@ export class ShopComponent {
     private scrollY: number;  // Current scroll position
     private maxScrollY: number;  // Maximum scroll position
     private lastTouchY: number | null = null;  // Last touch position
+    private shop1: {
+        shopIcon: Sprite,
+        title: string,
+        currency: string,
+        cost: number,
+        type: string
+    } | null = null;
+    private shopItemComponents: ShopItemComponent[] = [];
+    private shopItems: ShopItem[] = [];
+    private username: string = "";
+    private fetchProfile: () => void;
 
-    constructor(canvasWidth: number, canvasHeight: number) {
+    constructor(canvasWidth: number, canvasHeight: number, fetchProfile: () => void) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.scrollY = 0;  // Start at the top
         this.maxScrollY = 10000;  // Will be calculated based on content height
+        this.shop1 = {
+            shopIcon: new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100),
+            title: "Chest",
+            currency: "Gold",
+            cost: 100,
+            type: "Weapon"
+        }
+        this.fetchProfile = fetchProfile;
     }
 
     // Handle touch start to record the initial touch position
@@ -40,9 +63,16 @@ export class ShopComponent {
     handleTouchEnd() {
         this.lastTouchY = null;  // Reset when touch ends
     }
+    handleClick(x: number, y: number, devicePixelRatio: number) {
+        for (let i = 0; i < this.shopItemComponents.length; i++) {
+            const shopItemComponent = this.shopItemComponents[i];
+            shopItemComponent.handleClick(x, y, devicePixelRatio);
+        }
+    }
 
     render(context: CanvasRenderingContext2D) {
         // Clear the canvas before rendering
+        if (this.shop1 === null) return;
         context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
         context.fillStyle = blueBackground;
         context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -83,8 +113,16 @@ export class ShopComponent {
 
         // Render three boxes for special deals
         for (let i = 0; i < 3; i++) {
-            drawRoundedBox(context, this.canvasWidth * 0.1 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.33, this.canvasWidth * 0.25, this.canvasHeight * 0.22, 3, lighterGreenBackground, 1);
-            drawRoundedBox(context, this.canvasWidth * 0.12 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.34, this.canvasWidth * 0.21, this.canvasHeight * 0.15, 1, darkerGreenBackground, 0);
+            // drawRoundedBox(context, this.canvasWidth * 0.1 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.33, this.canvasWidth * 0.25, this.canvasHeight * 0.22, 3, lighterGreenBackground, 1, false, 1, true);
+            // drawRoundedBox(context, this.canvasWidth * 0.12 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.34, this.canvasWidth * 0.21, this.canvasHeight * 0.15, 1, darkerGreenBackground, 0, false, 1, true);
+            // this.shop1?.shopIcon.render(context, this.canvasWidth * 0.14 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.4, 3);
+            // context.fillStyle = "white";
+            // context.font = `${this.canvasHeight * 0.017}px depixel`;
+            
+            // context.fillText(this.shop1?.title, this.canvasWidth * 0.17 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.37);
+            // context.fillText(this.shop1?.currency + ": " + this.shop1?.cost, this.canvasWidth * 0.13 + i * this.canvasWidth * 0.28, this.canvasHeight * 0.485);
+            this.shopItemComponents[i].render(context, i);
+            
         }
 
         // Calculate total content height and max scroll limit
@@ -93,5 +131,27 @@ export class ShopComponent {
 
         // Restore the context (undo the translation)
         context.restore();
+    }
+    updateShop(dailyShop: ShopItem[], username: string) {
+        console.log("daily shop", dailyShop);
+        this.shopItems = dailyShop;
+        this.username = username;
+        const shopItemComponents = [];
+        for (let i = 0; i < this.shopItems.length; i++) {
+            const shopItem = this.shopItems[i];
+            const sprite = getSprite(shopItem.title);
+            const shopIcon = sprite;
+            const shopItemComponent = new ShopItemComponent(this.canvasWidth, this.canvasHeight, shopIcon, shopItem.title, shopItem.currency, shopItem.cost, shopItem.bought, () => {
+                this.purchaseItem(i);
+            }, shopItem.itemType, shopItem.rarity, i);
+            shopItemComponents.push(shopItemComponent);
+        }
+        this.shopItemComponents = shopItemComponents;
+    }
+
+    purchaseItem(index: number) { 
+        console.log("purchasing item", index)
+        buyItem(this.username, index);
+        this.fetchProfile();
     }
 }

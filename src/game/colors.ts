@@ -17,4 +17,9 @@ export const customizeBackground = "#7bb6bf";
 export const darkBrownBackground = "#3d1f0b";    
 export const activeGreenBackground = "#aed77d";
 export const lightBrownBackground ="#74442a";
+export const grayBackground = "#DCE8EF";
+export const darkGrayBackground = "#a5aeb3";
+export const lightGrayBackground = "#c6d0d7";
+export const grayText = "#555a5e";
+// export const redText = "#AB3537";
 // create menu, add blue colors

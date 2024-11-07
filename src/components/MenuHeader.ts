@@ -5,7 +5,7 @@ import Sprite from "../game/Sprite";
 export class MenuHeader {
     private canvasWidth;
     private canvasHeight;
-    private coinSprite: Sprite = new Sprite('ui/coinIcon.png', 28, 29, 1, 100);
+    private coinSprite: Sprite = new Sprite('ui/coinIcon.png', 14, 14, 1, 100);
     private gemSprite: Sprite = new Sprite('ui/gemIcon.png', 30, 29, 1, 100);
     constructor(canvasWidth: number, canvasHeight: number) {
         this.canvasWidth = canvasWidth;
@@ -29,8 +29,8 @@ export class MenuHeader {
         drawRoundedBox(context, this.canvasWidth * 0.30, this.canvasHeight * 0.035, this.canvasWidth * 0.25, this.canvasHeight * 0.03, 5, darkGold, 2, true);
 
         const maxSpriteSize = this.canvasHeight * 0.06;  // Set max height for the sprite
-        const scaleFactor = this.calculateScale(this.coinSprite, maxSpriteSize, maxSpriteSize);
-        this.coinSprite.render(context, this.canvasWidth * 0.25, this.canvasHeight * 0.02, scaleFactor);
+        const coinScaleFactor = this.calculateScale(this.coinSprite, maxSpriteSize, maxSpriteSize);
+        this.coinSprite.render(context, this.canvasWidth * 0.25, this.canvasHeight * 0.02, coinScaleFactor);
     
         // Set the font and style for the coin text
         context.fillStyle = lightGold;
@@ -55,7 +55,7 @@ export class MenuHeader {
         drawRoundedBox(context, this.canvasWidth * 0.60, this.canvasHeight * 0.035, this.canvasWidth * 0.25, this.canvasHeight * 0.03, 5, redBackground, 2, true);
         // Render the gem sprite
         const maxSpriteSize = this.canvasHeight * 0.06;  // Set max height for the sprite
-        const scaleFactor = this.calculateScale(this.coinSprite, maxSpriteSize, maxSpriteSize);
+        const scaleFactor = this.calculateScale(this.gemSprite, maxSpriteSize, maxSpriteSize);
         this.gemSprite.render(context, this.canvasWidth * 0.55, this.canvasHeight * 0.02, scaleFactor);
     
         // Set the font and style for the gem text
@@ -97,7 +97,7 @@ export class MenuHeader {
         context.font = `${this.canvasHeight * 0.03}px depixel`;
 
         // Render the level number inside the circle
-        context.fillText(level.toString(), circleX - this.canvasWidth * 0.015, circleY + this.canvasWidth * 0.02);
+        context.fillText(level.toString(), circleX - this.canvasWidth * 0.017, circleY + this.canvasWidth * 0.02);
     }
     private calculateScale(sprite: Sprite, maxWidth: number, maxHeight: number): number {
         const widthScale = maxWidth / sprite.frameWidth;

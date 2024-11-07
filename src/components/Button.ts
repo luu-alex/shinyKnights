@@ -10,7 +10,7 @@ export class Button {
 		public y: number,
 		public width: number,
 		public height: number,
-		private text: string,
+		public text: string,
 		private onClick: () => void,
 		color: string,
 		fontSize: number,

@@ -1,4 +1,5 @@
 import Pet from './Pets/Pet';
+import Sprite from './Sprite';
 import Enemy from './classes/Enemy';
 import Player from './classes/Player';
 
@@ -127,11 +128,11 @@ export function drawRoundedBox(
     radius: number,
     fillColor: string,
     lineWidth: number = 3,
-    bottomEdge: boolean = false
+    bottomEdge: boolean = false,
+    bottomEdgeLength: number = 3,
+    useFillcolor: boolean = false
 ) {
-    // Set the fill style to the desired color
-
-    context.strokeStyle = 'black';
+    context.strokeStyle = useFillcolor ? fillColor : 'black';
     context.lineWidth = lineWidth;  // Make the outline thick
 
     context.fillStyle = fillColor;
@@ -156,12 +157,51 @@ export function drawRoundedBox(
 
     context.stroke();
     if (bottomEdge) {
-        // Draw the thicker bottom line
+        // Draw a separate path for the thicker bottom edge with curved corners
+        context.strokeStyle = useFillcolor ? fillColor : 'black';
         context.beginPath();
-        context.moveTo(x, y + height); // Start at bottom-left
-        context.lineTo(x + width, y + height); // Draw to bottom-right
-        context.lineWidth = 3; // Set the custom line width for bottom line
-        context.strokeStyle = 'black'; // Define color for the bottom line
-        context.stroke(); // Apply the bottom line stroke
+        // Move to the start of the bottom-left corner curve
+        context.moveTo(x, y + height);
+        // Draw the bottom edge line with curves on both ends
+        context.lineTo(x + width - 2, y + height);
+        context.quadraticCurveTo(x + width, y + height, x + width, y + height - 2);
+        context.moveTo(x + 2, y + height - 2);
+        context.quadraticCurveTo(x, y + height, x + 2, y + height);
+        // Set the custom line width and stroke color for the bottom edge
+        context.lineWidth = bottomEdgeLength;
+        context.stroke();
     }
+}
+
+export function levelToGold(level: number): number {
+    return Math.pow(level, 2);
+}
+
+export const getSprite = (name: string) => { 
+    if (name === "spear") {
+        return new Sprite('weaponIcons/basicSpear.png', 32, 32, 4, 100);
+    } else if (name === "chest") {
+        return new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100)
+    } else if (name === "swordsmaster") {
+        return new Sprite('characters/swordman.png', 32, 32, 4, 100);
+    } else if (name === "basicChest") {
+        return new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100);
+    } else if (name === "dagger") {
+        return new Sprite('weaponIcons/dagger.png', 32, 32, 4, 100);
+    }
+    return new Sprite('weaponIcons/basicSpear.png', 32, 32, 4, 100);
+}
+
+export const getDescription = (name: string) => {
+    if (name === "basicChest") {
+        return "A basic chest that contains a random item.";
+    }
+    return "";
+}
+
+export const getTitle = (name: string) => {
+    if (name === "basicChest") {
+        return "Basic Chest"
+    }
+    return ""
 }

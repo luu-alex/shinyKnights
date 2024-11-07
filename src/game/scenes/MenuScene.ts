@@ -18,6 +18,8 @@ import { LoadingComponent } from '../../components/LoadingComponent';
 import { orderStatus, createOrder } from '../../apiCalls/aeonCalls';
 import { PurchasedGemsComponent } from '../../components/purchasedGemsComponent';
 import { InventoryComponent } from '../../components/InventoryComponent';
+import { PopupComponent } from '../../components/PopupComponent';
+import { Characters, Weapons, ItemInventory } from '../types';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -35,7 +37,6 @@ export default class MenuScene extends Scene {
   private customizeComponent: CustomizationComponent | null = null;
   private shopComponent: ShopComponent | null = null;
   private lastTouchY: number | null = null;  // For tracking touch movement for shop scrolling
-  public coins: number = 0;
   public gems: number = 0;
   public level: number = 1;
   public username: string = "Player";
@@ -47,6 +48,23 @@ export default class MenuScene extends Scene {
   private LoadingComponent: LoadingComponent | null = null;
   private purchasedGemsComponent: PurchasedGemsComponent | null = null;
   private InventoryComponent: InventoryComponent | null = null;
+  private popupComponent: PopupComponent | null = null;
+  private gold: number = 0;
+
+  public currentCharacter: string = "knight";
+  public currentWeapon: number = 0;
+  public characters: Characters | null  = null;
+  public weapons: Weapons = {
+    0: {
+        name: "spear",
+        level: 1,
+        stats: {
+          attack: 10,
+          defense: 5,
+        },
+        rarity: "common"
+    }
+  }
 
 
   private boundHandleClick: (event: MouseEvent) => void;
@@ -54,7 +72,10 @@ export default class MenuScene extends Scene {
   private boundHandleTouchMove: (event: TouchEvent) => void;
   private boundHandleTouchEnd: (event: TouchEvent) => void;
 
-  constructor(game: SceneManager) {
+  private fetchProfile: () => {};
+  private levelUpWeapon: (weaponID: number) => void;
+
+  constructor(game: SceneManager, fetchProfile: () => {}, levelUpWeapon: (weaponID: number) => void) {
     super(game, 'MenuScene');
     this.canvas = null;
     this.context = null;
@@ -62,10 +83,12 @@ export default class MenuScene extends Scene {
     this.sceneName = 'MenuScene';
     this.devicePixelRatio = window.devicePixelRatio || 1;
 
+    this.fetchProfile = fetchProfile;
     this.boundHandleClick = this.handleClick.bind(this);
     this.boundHandleTouchStart = this.handleTouchStart.bind(this);
     this.boundHandleTouchMove = this.handleTouchMove.bind(this);
     this.boundHandleTouchEnd = this.handleTouchEnd.bind(this);
+    this.levelUpWeapon = levelUpWeapon;
     
   }
 
@@ -78,7 +101,7 @@ export default class MenuScene extends Scene {
     const canvasHeight = this.canvas.height / this.devicePixelRatio;
 
     this.settings = new Settings(canvasWidth, canvasHeight, 'Settings', () => {}, () => {this.page = "menu"});
-    this.buyGemsComponent = new BuyGemsComponent(canvasWidth, canvasHeight, () => {this.page = "menu"}, this.handleBuyingGems.bind(this));
+    this.buyGemsComponent = new BuyGemsComponent(canvasWidth, canvasHeight, () => {this.page = "menu";}, this.handleBuyingGems.bind(this));
     this.orderComponent = new OrderComponent(canvasWidth, canvasHeight, () => {this.page = "menu"},  this.verifyOrder.bind(this));
     
     this.settingButton = new ImageButton(0.87,0.025, 0.1, 0.06, 'ui/settingIcon.png', this.openSettings.bind(this));
@@ -96,12 +119,13 @@ export default class MenuScene extends Scene {
     );
     this.LoadingComponent = new LoadingComponent(canvasWidth, canvasHeight);
     this.usernameComponent = new UsernameComponent();
-    this.customizeComponent = new CustomizationComponent(canvasWidth, canvasHeight);
-      this.menuHeader = new MenuHeader(canvasWidth, canvasHeight);
+    this.customizeComponent = new CustomizationComponent(canvasWidth, canvasHeight, this.levelUpWeapon, this.fetchProfile);
+    this.menuHeader = new MenuHeader(canvasWidth, canvasHeight);
     this.footer = new Footer(canvasWidth, canvasHeight, this.changePage.bind(this));
-    this.shopComponent = new ShopComponent(canvasWidth, canvasHeight);
+    this.shopComponent = new ShopComponent(canvasWidth, canvasHeight, this.fetchProfile);
     this.purchasedGemsComponent = new PurchasedGemsComponent(canvasWidth, canvasHeight);
-    this.InventoryComponent = new InventoryComponent(canvasWidth, canvasHeight);
+    this.InventoryComponent = new InventoryComponent(canvasWidth, canvasHeight, this.fetchProfile);
+
 
     // Add event listeners to handle interaction with the start button
     this.canvas.addEventListener('click', this.boundHandleClick);
@@ -130,7 +154,6 @@ export default class MenuScene extends Scene {
     assets.loadImage('skeleton', 'characters/skeletonWarrior.png');
     assets.loadImage('swordman', 'characters/swordman.png');
     assets.loadImage('warden', 'characters/warden.png');
-
     // Start rendering the menu
     this.render();
   }
@@ -140,6 +163,15 @@ export default class MenuScene extends Scene {
     this.render(); // Re-render to update the UI
   }
   public changePage (name: string)  {
+    if (name === "customize") {
+      this.customizeComponent?.updateWeaponPopup({title: this.weapons[this.currentWeapon].name, stats: this.weapons[this.currentWeapon].stats, level: this.weapons[this.currentWeapon].level, currentWeapon: this.currentWeapon});
+      this.customizeComponent?.updateGold(this.gold);
+      this.customizeComponent?.updateWeapon(this.weapons);
+      if (this.characters) {
+        this.customizeComponent?.updateCharacterPopup(this.characters);
+        this.customizeComponent?.updateCharacter(this.currentCharacter);
+      }
+    }
     this.page = name;
   }
 
@@ -199,16 +231,24 @@ export default class MenuScene extends Scene {
       this.orderComponent?.purchaseButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
       this.orderComponent?.verifyButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
     };
-    if (this.page === "invetory") {
+    if (this.page === "inventory") {
       // this.InventoryComponent?.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
+      this.InventoryComponent?.handleClick(mouseX, mouseY, this.devicePixelRatio);
     }
     if (this.settings && this.settings.isVisible) {
       this.settings.exitButton.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
       return;
     }
+    if (this.page === "customize") {
+      this.customizeComponent?.handleClick(mouseX, mouseY, this.devicePixelRatio);
+    }
     if (this.purchasedGemsComponent && this.purchasedGemsComponent.isVisible) {
+      console.log("clicking exit button")
       this.purchasedGemsComponent.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
       return;
+    }
+    if (this.mode === "shop") {
+      this.shopComponent?.handleClick(mouseX, mouseY, this.devicePixelRatio);
     }
     const clicked = this.footer?.handleClick(mouseX / this.devicePixelRatio, mouseY / this.devicePixelRatio);
     if (clicked) {
@@ -237,10 +277,13 @@ export default class MenuScene extends Scene {
       // need to update the profile
       this.gems += 100;
       this.page = "purchasedGems";
+      this.purchasedGemsComponent?.show();
     } else {
-      this.page = "orderFailed";
+      // this.page = "orderFailed";
+      this.page= "purchasedGems";
     }
     this.isLoading = false;
+    this.fetchProfile();
   }
 
   private startGame() {
@@ -285,11 +328,12 @@ export default class MenuScene extends Scene {
     // CustomizationComponent
     if (this.mode === "customize") {
       this.customizeComponent?.render(this.context);
+      this.customizeComponent?.update();
     } else if (this.mode === "shop") {
       this.shopComponent?.render(this.context);
     }
     // create header
-    this.menuHeader?.render(this.context, this.coins, this.gems, this.level);
+    this.menuHeader?.render(this.context, this.gold, this.gems, this.level);
     this.purchaseGemsButton?.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
     if (this.page === "gemShop" && this.buyGemsComponent?.isVisible) {
       this.buyGemsComponent?.render(this.context);
@@ -310,13 +354,15 @@ export default class MenuScene extends Scene {
     if (this.isLoading && this.LoadingComponent) {
       this.LoadingComponent.render(this.context);
     }
-    if (this.page === "purchasedGems" && this.purchasedGemsComponent) {
+    if (this.purchasedGemsComponent?.isVisible && this.purchasedGemsComponent) {
       this.purchasedGemsComponent?.render(this.context);
     }
+    if (this.page ==="orderfailed") {
 
+    }
+    this.popupComponent?.render(this.context);
     
   }
-
   destroy() {
     if (this.canvas) {
       // Remove event listeners when the scene is destroyed
@@ -325,5 +371,42 @@ export default class MenuScene extends Scene {
       this.canvas.removeEventListener('touchmove', this.boundHandleTouchMove);
       this.canvas.removeEventListener('touchend', this.boundHandleTouchEnd);
     }
+  }
+
+  updateFromDatabase(profile: {gold?: number, gems?: number, level?: number, username?: string, weapons?: Weapons, characters?: Characters, currentCharacter?: string, currentWeapon?: number, inventory?: ItemInventory[]}) {
+    console.log("updating from database", profile);
+    if (profile.gems) this.gems = profile.gems;
+    if (profile.level) this.level = profile.level;
+    if (profile.username) {
+      this.username = profile.username;
+      this.customizeComponent?.updateUsername(this.username);
+      this.InventoryComponent?.updateUsername(this.username);
+    }
+    if (profile.currentWeapon && this.customizeComponent) {
+      this.customizeComponent.currentWeapon = profile.currentWeapon;
+    }
+    if (profile.weapons) {
+      this.weapons = profile.weapons
+      this.customizeComponent?.updateWeapon(this.weapons);
+    };
+    if (profile.characters) {
+      this.characters = profile.characters
+      this.customizeComponent?.updateCharacterPopup(this.characters);
+    };
+    if (profile.currentCharacter) this.currentCharacter = profile.currentCharacter;
+    if (profile.currentWeapon) this.currentWeapon = profile.currentWeapon;
+    if (profile.gold) {
+      this.gold = profile.gold;
+      this.customizeComponent?.updateGold(this.gold);
+    }
+    if (profile.inventory) {
+      this.InventoryComponent?.updateInventory(profile.inventory);
+    }
+    this.render();
+
+  }
+  updateDailyShop(dailyShop: any, username: string) {
+    this.shopComponent?.updateShop(dailyShop, username);
+
   }
 }

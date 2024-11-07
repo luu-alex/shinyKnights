@@ -1,15 +1,54 @@
-import { darkBlueText, lightBrownBackground, primaryBrownBackground } from "../game/colors";
-import { drawRoundedBox } from "../game/utils";
+import { unlockChest } from "../apiCalls/serverCalls";
+import Sprite from "../game/Sprite";
+import { darkBlueText, grayText, lightBrownBackground, primaryBrownBackground } from "../game/colors";
+import { ItemInventory } from "../game/types";
+import { drawRoundedBox, getDescription, getSprite, getTitle } from "../game/utils";
+import { BoxComponent } from "./BoxComponent";
+import { LoadingComponent } from "./LoadingComponent";
+import { PopupComponent } from "./PopupComponent";
+import { UnlockComponent } from "./UnlockComponent";
 
 export class InventoryComponent {
     private canvasWidth;
     private canvasHeight;
-    constructor(canvasWidth: number, canvasHeight: number) {
+    private inventory: ItemInventory[] = [];
+    private itemData: {sprite: Sprite, name: string, description: string, rarity: string, id: number}[] = [];
+    private itemBox: BoxComponent[] = [];
+    private popup: PopupComponent | null = null;
+    private fetchProfile: () => void;
+    public username: string = "";
+    private loadingComponent: LoadingComponent;
+    private isLoading: boolean = false;
+    private unlockComponent: UnlockComponent | null = null;
+
+
+    
+    constructor(canvasWidth: number, canvasHeight: number, fetchProfile: () => void) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+        this.fetchProfile = fetchProfile;
+        this.loadingComponent = new LoadingComponent(canvasWidth, canvasHeight);
+        this.unlockComponent = new UnlockComponent(this.canvasWidth, this.canvasHeight, "Spear", () => {}, () => {});
+    }
+    updateInventory(inventory: ItemInventory[]) {
+        this.inventory = inventory;
+        this.itemData = [];
+        this.itemBox = [];
+        for (let i = 0; i < this.inventory.length; i++) {
+            const { name, rarity, id } = this.inventory[i];
+            this.itemData.push({
+                sprite: getSprite(name),
+                name: name,
+                description: getDescription(name),
+                rarity: rarity,
+                id: id
+            });
+            this.itemBox.push(new BoxComponent(this.canvasWidth * 0.02 + (this.canvasWidth * 0.17 + this.canvasWidth * 0.02) * (i % 5), this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * Math.floor(i / 5), this.canvasWidth * 0.17, this.canvasHeight * 0.17, () => {this.createPopup(this.inventory[i])}));
+        }
     }
     render(context: CanvasRenderingContext2D) {
         // Set the font and style for the coin text
+        // console.log("inventory component", this.inventory)
         context.fillStyle = darkBlueText;
         context.font = `${this.canvasHeight * 0.06}px depixel`;
     
@@ -22,28 +61,12 @@ export class InventoryComponent {
         const boxX = this.canvasWidth * 0.05;
         const boxWidth = this.canvasWidth * 0.9;
         const centeredX = boxX + (boxWidth - textWidth) / 2;
+        getSprite
     
         // Render the centered text
         context.fillText(title, centeredX, this.canvasHeight * 0.16);
 
-        drawRoundedBox(context, this.canvasWidth * 0, this.canvasHeight * 0.3, this.canvasWidth, this.canvasHeight * 0.8, 1, primaryBrownBackground, 2);
-
-        // context.fillStyle = customizeBackground;
-        // context.fillRect(this.canvasWidth * 0.05, this.canvasHeight * 0.2, this.canvasWidth * 0.9, this.canvasHeight * 0.3);
-
-        // context.fillStyle = primaryBrownBackground;
-        // context.fillRect(this.canvasWidth * 0.00, this.canvasHeight * 0.52, this.canvasWidth, this.canvasHeight * 0.6);
-
-        // draw a black line
-        // context.strokeStyle = "black";
-        // context.lineWidth = 2;
-        // context.beginPath();
-        // context.moveTo(this.canvasWidth * 0.00, this.canvasHeight * 0.52);
-        // context.lineTo(this.canvasWidth, this.canvasHeight * 0.52);
-        // context.stroke();
-
-        // this.choosePlayerButton?.render(context);
-        // this.choosePetButton?.render(context);
+        drawRoundedBox(context, this.canvasWidth * 0, this.canvasHeight * 0.3, this.canvasWidth, this.canvasHeight * 0.8, 1, primaryBrownBackground, 4);
 
         // draw perfect squares
         const squareSize = Math.min(this.canvasWidth, this.canvasHeight) * 0.17;
@@ -51,13 +74,71 @@ export class InventoryComponent {
         // should be drawn in a loop for columns and rows
         for (let j = 0; j < 5; j++) {
             for (let i = 0; i < 5; i++) {
-                drawRoundedBox(context, this.canvasWidth * 0.02 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * j, squareSize, squareSize, 10, lightBrownBackground, 2);
+                drawRoundedBox(context, this.canvasWidth * 0.02 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * j, squareSize, squareSize, 6, lightBrownBackground, 2);
                 // drawRoundedBox(context, this.canvasWidth * 0.05 + (squareSize * i) + i * this.canvasWidth * 0.01, this.canvasHeight * 0.3 + squareSize + this.canvasHeight * 0.02 + this.canvasHeight * 0.02 * j, squareSize, squareSize, 10, darkBrownBackground, 2);
             }
         }
-        // drawRoundedBox(context, this.canvasWidth * 0.05, this.canvasHeight * 0.62, squareSize, squareSize, 10, primaryBrownBackground, 2);
+        let j = 0;
+        for (let i = 0; i < this.itemData.length; i++) {
+            if (i > 4) {
+                j += 1;
+            }
+            const item = this.itemData[i];
+            const box = this.itemBox[i];
+            const color = this.itemData[i].rarity === "common" ? "gray" : this.itemData[i].rarity === "rare" ? "blue" : this.itemData[i].rarity === "epic" ? "purple" : lightBrownBackground;
+            box.render(context, this.canvasWidth * 0.02 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * j, squareSize, squareSize, 6, color, 2)
+            item.sprite.render(context, this.canvasWidth * 0.04 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.39 + this.canvasHeight * 0.11 * Math.floor(i / 5), 1.5);
+        }
+        if (this.isLoading) {
+            this.loadingComponent.render(context);
+        }
+        this.popup?.render(context);
+        if (this.unlockComponent?.isVisible) {
+            this.unlockComponent?.render(context);
+        }
+        
+    }
+    handleClick(x: number, y: number, devicePixelRatio: number) {
+        if (this.isLoading) return;
+        for (let i = 0; i < this.itemBox.length; i++) {
+            const box = this.itemBox[i];
+            box.handleClick(x, y, devicePixelRatio);
+        }
+        console.log("handle click inventory")
+        console.log(this.unlockComponent?.isVisible)
+        if (this.popup) {
+            this.popup.handleClick(x / devicePixelRatio, y / devicePixelRatio, devicePixelRatio);
+        }
+        if (this.unlockComponent?.isVisible) {
+            this.unlockComponent?.handleClick(x, y, devicePixelRatio);
+        }
 
+    }
+    createPopup(item: ItemInventory) {
+        const { name, rarity, id, type } = item;
+        let buttonAction = "Do something"
+        if (id === 1) {
+            buttonAction = "Unlock"
+        }
+        const title = getTitle(name);
+        this.popup = new PopupComponent(this.canvasWidth, this.canvasHeight, title, () => {this.handleChest(id)}, () => { this.popup = null; console.log("handle click") }, rarity, buttonAction);
+        this.popup.updateInfo({description: getDescription(name), itemSprite: getSprite(name), type});
+    }
+    async handleChest(chestID: number) {
+        this.popup = null;
+        this.isLoading = true;
+        const unlocked = await unlockChest(this.username, chestID);
+        console.log("unlocked", unlocked);
+        await this.fetchProfile();
+        this.isLoading = false;
+        this.unlockComponent?.update(unlocked.name);
+        this.unlockComponent?.show();
 
+        
+
+    }
+    updateUsername(username: string) {
+        this.username = username;
     }
 
 };

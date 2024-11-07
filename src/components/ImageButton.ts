@@ -50,11 +50,11 @@ export class ImageButton {
 
     // Method to handle button click
     handleClick(mouseX: number, mouseY: number, canvasWidth: number, canvasHeight: number) {
+        
         const scaledX = this.x * canvasWidth;
         const scaledY = this.y * canvasHeight;
         const scaledWidth = this.width * canvasWidth;
         const scaledHeight = this.height * canvasHeight;
-
         if (
             mouseX >= scaledX &&
             mouseX <= scaledX + scaledWidth &&

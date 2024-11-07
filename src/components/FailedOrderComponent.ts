@@ -1,3 +1,4 @@
+
 import { darkerGreenBackground, lighterGreenBackground, primaryColorBackground } from "../game/colors";
 import { drawRoundedBox, wrapText } from "../game/utils";
 import { Button } from "./Button";
@@ -44,7 +45,6 @@ export class PurchasedGemsComponent {
         this.isVisible = true;
     }
     hide() {
-        console.log("ckicking")
         this.isVisible = false;
     }
 }

@@ -5,7 +5,7 @@ import WebApp from '@twa-dev/sdk';
 import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { SceneManager } from './scenes/SceneManager';
 import { lighterGreenBackground } from './colors';
-// import { updateProfile } from '../api/serverCalls';
+import { getDailyShop, updateProfile, upgradeWeapon } from '../apiCalls/serverCalls';
 const serverURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5001";
 // console.log("server url ", serverURL);
 // const localURL = "http://localhost:5001"
@@ -25,18 +25,38 @@ const CanvasGame: React.FC = () => {
 	const initdataRef = useRef<string>();
 	const userNameRef = useRef<string>();
 	const [profile, setProfile] = useState<any>(null); // profile state
+	// const [dailyShop, setDailyShop] = useState<any>(null);
+	// const profileRef = useRef<any>(null);
 	
+	// const updatePlayerInfo = async (profile: any) => {
+	// 	console.log('Updating profile with new info:', profile);
+	// 	if (!profile.username) {
+	// 		profile.username = userNameRef.current;
+	// 	}
+	// 	await updateProfile(profile);
+	// 	await fetchOrCreateProfile();
+	// }
 
 	const fetchOrCreateProfile = async () => {
 		try {
 			console.log(userNameRef.current)
 			const response = await axios.post(serverURL + '/api/profile', { username: userNameRef.current });
 			setProfile(response.data); // Set the profile data
+			// profileRef.current = response.data;
 			console.log(response.data)
 		} catch (err) {
 			console.error('Error fetching or creating profile.', err);
 		}
 	};
+
+	const levelUpWeapon = async (weaponID: number) => {
+		console.log("calling")
+		if (!userNameRef.current) return;
+		await upgradeWeapon(userNameRef.current, weaponID);
+		await fetchOrCreateProfile();
+	}
+	
+
 
 	useEffect(() => {
 		// Set or update TonConnect UI options dynamically
@@ -62,9 +82,41 @@ const CanvasGame: React.FC = () => {
 
 	// Fetch profile when the component mounts
 	useEffect(() => {
-		initdataRef.current = WebApp.initDataUnsafe.user?.username;
-		userNameRef.current = initdataRef.current ? initdataRef.current : 'user1';
-		fetchOrCreateProfile();
+		const fetchData = async () => {
+            initdataRef.current = WebApp.initDataUnsafe.user?.username;
+            userNameRef.current = initdataRef.current ? initdataRef.current : 'user1';
+
+            // Fetch or create profile
+            await fetchOrCreateProfile();
+            // Fetch daily shop
+            // const fetchedDailyShop = await getDailyShop(userNameRef.current);
+            // if (fetchedDailyShop) {
+            //     setDailyShop(fetchedDailyShop);
+            // }
+        };
+
+        fetchData()
+
+		// updateProfile({
+		// 	username: userNameRef.current,
+		// 	// weapons: [{
+		// 	// 	level: 1,
+		// 	// 	stats: {
+		// 	// 	  attack: 5,
+		// 	// 	  defense: 5,
+		// 	// 	},
+		// 	// 	name: 'spear',
+		// 	// 	rarity: 'common'
+		// 	//   }
+		// 	// ],
+		// 	inventory: [{
+		// 		type: 'item',
+		// 		name: 'basicChest',
+		// 		id: 1,
+		// 		rarity: 'common'
+		// 	}]
+		// })
+		
 	}, []); // Runs only once on mount
 
 	// Initialize the game once, when the profile is loaded and canvas is available
@@ -111,7 +163,7 @@ const CanvasGame: React.FC = () => {
 
 			// Initialize MenuScene only once
 			if (!menuSceneRef.current) {
-				const menuScene = new MenuScene(sceneManagerRef.current);
+				const menuScene = new MenuScene(sceneManagerRef.current, fetchOrCreateProfile, levelUpWeapon);
 				menuSceneRef.current = menuScene;
 				sceneManagerRef.current.changeScene(menuScene, canvas, context);
 				setCurrentScene(menuScene.sceneName);
@@ -121,11 +173,22 @@ const CanvasGame: React.FC = () => {
 
 	// Update the menuScene's properties when profile updates (don't recreate the scene)
 	useEffect(() => {
+		// profileRef.current = profile;
+		console.log("canvas game profile", profile);
+		console.log("canvas game dailyshop",);
 		if (menuSceneRef.current && profile) {
-			menuSceneRef.current.gems = profile.gems;
-			menuSceneRef.current.coins = profile.coins;
-			menuSceneRef.current.level = profile.level;
-			menuSceneRef.current.username = profile.username;
+			menuSceneRef.current.updateFromDatabase({
+				weapons: profile.weapons, 
+				currentWeapon: profile.currentWeapon, 
+				currentCharacter: profile.currentCharacter, 
+				characters: profile.characters,
+				level: profile.level,
+				gold: profile.gold,
+				gems: profile.gems,
+				username: profile.username,
+				inventory: profile.inventory,
+			});
+			menuSceneRef.current.updateDailyShop(profile.shop.items, profile.username);
 		}
 	}, [profile]);
 
