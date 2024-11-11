@@ -17,6 +17,16 @@ export const updateProfile = async (profile: any) => {
     }
 };
 
+export const gameResults = async (username: string, wave: number) => {
+    console.log("game results");
+    try {
+        const response = await axios.post(serverURL + '/api/gameResults', { username, wave });
+        return response.data;
+    } catch (err) {
+        console.error('Error fetching or creating profile.', err);
+    }
+}
+
 export const fetchOrCreateProfile = async (username: string) => {
     try {
         const response = await axios.post(serverURL + '/api/profile', { username });
@@ -46,6 +56,21 @@ export const upgradeCharacter = async (username: string, characterID: string) =>
     try {
         console.log("updating character", username, characterID)
         const response = await axios.post(serverURL + '/api/upgradeCharacter', { username, characterID });
+        console.log(response);
+        if (response.status === 200) {
+            console.log(response.data)
+            console.log('Profile updated successfully');
+        } else {
+            console.error('Error updating profile.');
+        }
+    } catch (err) {
+        console.error('error updatinhg profile.', err);
+    }
+};
+export const equipWeaponAPI = async (username: string, index: number) => {
+    try {
+        console.log("equipping weapon", username, index)
+        const response = await axios.post(serverURL + '/api/equipWeapon', { username, index });
         console.log(response);
         if (response.status === 200) {
             console.log(response.data)

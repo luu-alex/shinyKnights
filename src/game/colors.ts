@@ -21,5 +21,7 @@ export const grayBackground = "#DCE8EF";
 export const darkGrayBackground = "#a5aeb3";
 export const lightGrayBackground = "#c6d0d7";
 export const grayText = "#555a5e";
+export const rareBackground = "#B858D8";
+export const uncommonBackground = "#39BA53";
 // export const redText = "#AB3537";
 // create menu, add blue colors

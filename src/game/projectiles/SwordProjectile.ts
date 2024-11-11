@@ -4,7 +4,7 @@ import Sprite from '../Sprite';
 export default class SwordProjectile extends Projectile {
 
     constructor(x: number, y: number, targetX: number, targetY: number, damage: number) {
-        super(x, y, targetX, targetY, damage, 5, 25, 25, new Sprite('weapons/whiteSlash.png', 256, 256, 5, 50));  // Inherit properties from base Projectile
+        super(x, y, targetX, targetY, damage, 5, 25, 25, new Sprite('weapons/swordProjectile.png', 64, 64, 4, 50));  // Inherit properties from base Projectile
         this.speed = 50;  // Sword slashes move slower than bullets
     }
 
@@ -21,7 +21,8 @@ export default class SwordProjectile extends Projectile {
     //     }
     // }
     public update(deltaTime: number) {
-        super.update(deltaTime);
+        super.update(deltaTime, false);
+        if (!this.sprite.isLastFrame())
         this.sprite.update();
 
     }
@@ -29,12 +30,13 @@ export default class SwordProjectile extends Projectile {
     // Render the sword slash (this can be customized based on your design)
     public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.alive) {
+            // debug
             // Calculate the angle of rotation based on the direction
             const angle = Math.atan2(this.directionY, this.directionX);
 
             context.save();  // Save the current state of the canvas
 
-            context.scale(0.25, 0.25);  // Scale the context to half size
+            context.scale(1, 1);  // Scale the context to half size
             // Move the origin to the projectile's position
             context.translate(this.x - cameraX, this.y - cameraY);
 

@@ -3,7 +3,7 @@ import { darkerGreenBackground, lighterGreenBackground, primaryColorBackground }
 import { drawRoundedBox, wrapText } from "../game/utils";
 import { Button } from "./Button";
 
-export class PurchasedGemsComponent {
+export class FailedOrderComponent {
     private canvasWidth: number;
     private canvasHeight: number;
     public isVisible: boolean;
@@ -22,12 +22,12 @@ export class PurchasedGemsComponent {
         let fontSize = this.canvasHeight * 0.035;
         context.font = `${fontSize}px depixel`;
         context.fillStyle = 'white';
-        const text = "Purchase success!";
+        const text = "Verification Failed";
         const textWidth = context.measureText(text).width;
         const textX = (this.canvasWidth - textWidth) / 2;
         context.fillText(text, textX, this.canvasHeight * 0.25);
 
-        const descriptionPurchase = "Gems have been deposited to your account!";
+        const descriptionPurchase = "Unable to process order, if you have purchased, please wait and try again";
         const lines = wrapText(context, descriptionPurchase, this.canvasWidth * 0.85);
         // Render each line of the description
         context.fillStyle = "white";

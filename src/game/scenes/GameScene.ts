@@ -7,15 +7,15 @@ import Player from '../classes/Player';
 import Camera from '../classes/Camera';
 import EnemyManager from '../classes/EnemyManager';
 import ProjectileManager from '../projectiles/ProjectileManager';
-import { isColliding, resolveCollision} from '../utils';
+import { getWeapon, isColliding, resolveCollision} from '../utils';
 import PetManager from '../Pets/PetManager';
 import HUD from '../HUD/Hud';
 import EnemySpawner from '../classes/EnemySpawner';
-
-// import { Guardian } from '../skills/Gaurdian';
 import ItemManager from '../classes/ItemManager';
 import { Shop } from '../classes/Shop';
 import { Settings } from '../../components/Settings';
+import { GameOverComponent } from '../../components/GameOverComponent';
+import { gameResults } from '../../apiCalls/serverCalls';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -46,8 +46,19 @@ export default class GameScene extends Scene {
 	private shop: Shop;
 	private roundEnd: boolean = false;
 	private settings: Settings | null = null;
+	private isDead: boolean = false;
+	private gameOverComponent: GameOverComponent | null = null;
+	private isVictory: boolean = false;
+	private boundHandleInteractionStart: (event: MouseEvent | TouchEvent) => void;
+    private boundHandleInteractionMove: (event: MouseEvent | TouchEvent) => void;
+    private boundHandleInteractionEnd: (event: MouseEvent | TouchEvent) => void;
+	private username: string = ""
 
-	constructor(game: any) {
+
+	private fetchProfile: () => {};
+	private levelUpWeapon: (weaponID: number) => void;
+	private createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void;
+	constructor(game: any, profile: any, fetchProfile: () => {}, levelUpWeapon : (weaponId: number) => void, createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void) {
 		super(game, 'gameScene');
 		this.canvas = null;
 		this.context = null;
@@ -56,18 +67,22 @@ export default class GameScene extends Scene {
 		this.devicePixelRatio = window.devicePixelRatio || 1;
 		this.joystick = null; // Initialize joystick as null
 		this.pauseButton = null;
+		this.fetchProfile = fetchProfile;
+		this.levelUpWeapon = levelUpWeapon;
+		this.createMenuScene = createMenuScene;
 
         const playerIdleSprite = new Sprite('characters/warden.png', 32, 32, 4, 100);
         const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
         const playerDeathSprite = new Sprite('characters/warden.png', 32, 64, 5, 100, 6);
 		this.projectileManager = new ProjectileManager();
-        this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], this.mapWidth/2, this.mapHeight/2, 300, this.projectileManager);
+		const weapon =  getWeapon(profile.weapons[profile.currentWeapon].name);
+        this.player = new Player([playerIdleSprite, playerWalkSprite, playerDeathSprite], this.mapWidth/2, this.mapHeight/2, 300, this.projectileManager, weapon);
 		this.HUD = new HUD(this.player);
 
 		this.itemManager = new ItemManager(this.player);
 		this.enemyManager = new EnemyManager(this.player, this.itemManager);
 		this.petManager = new PetManager();
-		this.enemySpawner = new EnemySpawner(this.enemyManager, this.player, 3, 50, 0.001);
+		this.enemySpawner = new EnemySpawner(this.enemyManager, this.player, 1, 40, 0.3);
 
 		this.shop = new Shop(this.player, this.startNewRound.bind(this), this.petManager, this.itemManager);
 
@@ -82,6 +97,10 @@ export default class GameScene extends Scene {
 		this.wood = new Sprite('background/wood.png', 120, 64, 1, 100);
 		this.rock = new Sprite('background/rock.png', 100, 70, 1, 100);
 
+		this.boundHandleInteractionStart = this.handleInteractionStart.bind(this);
+        this.boundHandleInteractionMove = this.handleInteractionMove.bind(this);
+        this.boundHandleInteractionEnd = this.handleInteractionEnd.bind(this);
+
 	}
 
 	init(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
@@ -91,7 +110,8 @@ export default class GameScene extends Scene {
 		this.camera.canvasHeight = this.canvas.height / this.devicePixelRatio;
 		this.camera.canvasWidth = this.canvas.width / this.devicePixelRatio;
 		this.settings = new Settings(this.camera.canvasWidth, this.camera.canvasHeight, "Paused", this.exitGame.bind(this), () => {});
-
+		this.gameOverComponent = new GameOverComponent(this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio, "Game Over", this.exitAndSubmit.bind(this), this.fetchProfile);
+		
 		this.pauseButton = new ImageButton(0.87,0.1, 0.1, 0.05, 'ui/pauseIcon.png', this.pauseGame.bind(this));
 
         const joystickSizePercentage = 0.08;
@@ -104,25 +124,21 @@ export default class GameScene extends Scene {
             this.player.handleInput(xInput, yInput);
         };
 		this.shop.init(canvas, this.devicePixelRatio);
-
+		console.log("init gamescene")
 		// Add event listeners to handle interaction with the joystick
-		this.canvas.addEventListener('mousemove', this.handleInteractionMove.bind(this));
-		this.canvas.addEventListener('mousedown', this.handleInteractionStart.bind(this));
-		this.canvas.addEventListener('mouseup', this.handleInteractionEnd.bind(this));
-
-        this.canvas.addEventListener('touchstart', this.handleInteractionStart.bind(this));
-		this.canvas.addEventListener('touchmove', this.handleInteractionMove.bind(this));
-		this.canvas.addEventListener('touchend', this.handleInteractionEnd.bind(this));
+		this.canvas.addEventListener('mousemove', this.boundHandleInteractionMove);
+        this.canvas.addEventListener('mousedown', this.boundHandleInteractionStart);
+        this.canvas.addEventListener('mouseup', this.boundHandleInteractionEnd);
+        this.canvas.addEventListener('touchstart', this.boundHandleInteractionStart);
+        this.canvas.addEventListener('touchmove', this.boundHandleInteractionMove);
+        this.canvas.addEventListener('touchend', this.boundHandleInteractionEnd);
 		
-		// this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		// this.enemyManager.addEnemy(new SkeletonWarrior(250, 200, this.player));
-		// this.enemyManager.addEnemy(new SkeletonWarrior(250, 250, this.player));
-		// this.enemyManager.addEnemy(new SkeletonWarrior(200, 200, this.player));
-		// this.enemyManager.addEnemy(new SkeletonMage(100,100, this.player));
-		// this.enemyManager.addEnemy(new Ghoul(100, 100, this.player));
-		// this.enemyManager.addEnemy(new Banshee(100, 100, this.player));
-
 		this.render();
+	}
+
+	private async exitAndSubmit() {
+		await gameResults(this.username, this.currentRound);
+		this.exitGame();
 	}
 	private startNewRound() {
 		this.roundEnd = false;
@@ -133,11 +149,24 @@ export default class GameScene extends Scene {
 		this.player.x = this.mapHeight / 2;
 		this.player.y = this.mapWidth / 2;
 	}
-	private endRound() {
+	private async endRound() {
 		// Reset player stats
-		this.player.hp = this.player.maxHP; // Full health
+		this.player.hp = 1; // Full health
 		this.player.x = this.mapWidth / 2; // Spawn at center of the map
 		this.player.y = this.mapHeight / 2;
+		if (this.currentRound === 3) {
+			this.enemySpawner.pushSkeletonMage();
+		}
+		if (this.currentRound === 4) {
+			this.enemySpawner.pushBanshee();
+		}
+		if (this.currentRound === 10 && this.gameOverComponent) {
+			this.gameOverComponent.updateWave(this.currentRound);
+			this.gameOverComponent.title = "Victory"
+			this.gameOverComponent.description = "You have won!"
+			this.isVictory = true;
+			
+		}
 	
 		// Reset enemies
 		this.enemyManager.clearEnemies();
@@ -158,8 +187,16 @@ export default class GameScene extends Scene {
 	
 
     public update(delta: number) {
-		if (this)
+		if (this.isVictory) {
+			
+			return;
+		}
 		if(this.roundEnd || this.settings?.isVisible) return;
+		if (this.player.hp < 0) {
+			this.isDead = true;
+			this.gameOverComponent?.updateWave(this.currentRound);
+			return;
+		}
         this.player.update(delta, 3000, 2000);
 		this.enemyManager.update(delta);
 		this.itemManager.update();
@@ -229,15 +266,32 @@ export default class GameScene extends Scene {
 	}
 	private exitGame() {
 		// this is exiting the game to menuScene
-        const menuScene = new MenuScene(this.game);
-        this.game.changeScene(menuScene, this.canvas!, this.context!);
+		if (this.canvas && this.context) {
+			console.log("changin scene")
+			this.createMenuScene(this.canvas, this.context);
+		}
 	}
 
 	private handleInteractionStart(event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // Prevents scrolling/zooming on touch devices
 		if (!this.canvas || !this.joystick) return;
+		console.log("handling stuff")
+		
 
 		const { x, y } = this.getCoordinatesFromEvent(event);
+
+		if (this.shop.isVisible && !this.isVictory) {
+			this.shop.handleInteraction(x, y, this.devicePixelRatio);
+			return;  // Skip other interactions when the shop is open
+		}
+		if (this.settings && this.settings.isVisible) {
+			this.settings.exitButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
+			this.settings.homeButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
+			return;
+		}
+		if (this.pauseButton){
+			this.pauseButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
+		}
 		
 
 		const heightBoundary = 0.5 * this.canvas.height / this.devicePixelRatio;
@@ -260,19 +314,10 @@ export default class GameScene extends Scene {
 	// Unified event handler for both mouse and touch end
 	private handleInteractionEnd(event: MouseEvent | TouchEvent) {
         const { x, y } = this.getCoordinatesFromEvent(event);
-		if (this.shop.isVisible) {
-			this.shop.handleInteraction(x, y, this.devicePixelRatio);
-			return;  // Skip other interactions when the shop is open
-		}
-		if (this.settings && this.settings.isVisible) {
-			this.settings.exitButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
-			this.settings.homeButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
-			return;
-		}
-		if (this.pauseButton)
-        this.pauseButton.handleClick(x, y, this.canvas!.width, this.canvas!.height);
 		if (!this.joystick) return;
 		this.joystick.endDrag();
+		if (this.isDead || this.isVictory)
+		this.gameOverComponent?.handleClick(x, y, this.devicePixelRatio);
 	}
 
 	// Extracts normalized coordinates (x, y) from both mouse and touch events
@@ -296,6 +341,7 @@ export default class GameScene extends Scene {
 	}
 
 	render() {
+		console.log("rendering")
 		if (!this.isRunning || !this.context || !this.canvas) return;
         this.context.imageSmoothingEnabled = false;
 
@@ -328,10 +374,13 @@ export default class GameScene extends Scene {
 		}
 		this.HUD.render(this.context, this.canvas, this.currentRound, this.roundTimer, this.devicePixelRatio);
 		// this.lightning.render(this.context, 100, 100, this.devicePixelRatio);
-		if (this.shop.isVisible)
+		if (this.shop.isVisible && !this.isVictory)
 		this.shop.render(this.context);
 		if (this.settings?.isVisible)
 		this.settings.render(this.context);
+		if (this.isDead || this.isVictory) {
+			this.gameOverComponent?.render(this.context);
+		}
 	}
 	private renderBackground() {
 		if (!this.context) return;
@@ -361,14 +410,18 @@ export default class GameScene extends Scene {
 	}
 
 	destroy() {
+		console.log("destroy game scene", this.canvas)
 		if (this.canvas) {
 			// Remove event listeners when the scene is destroyed
-			this.canvas.removeEventListener('mousemove', this.handleInteractionMove.bind(this));
-			this.canvas.removeEventListener('mousedown', this.handleInteractionStart.bind(this));
-			this.canvas.removeEventListener('mouseup', this.handleInteractionEnd.bind(this));
-			this.canvas.removeEventListener('touchstart', this.handleInteractionStart.bind(this));
-			this.canvas.removeEventListener('touchmove', this.handleInteractionMove.bind(this));
-			this.canvas.removeEventListener('touchend', this.handleInteractionEnd.bind(this));
+			this.canvas.removeEventListener('mousemove', this.boundHandleInteractionMove);
+			this.canvas.removeEventListener('mousedown', this.boundHandleInteractionStart);
+			this.canvas.removeEventListener('mouseup', this.boundHandleInteractionEnd);
+			this.canvas.removeEventListener('touchstart', this.boundHandleInteractionStart);
+			this.canvas.removeEventListener('touchmove', this.boundHandleInteractionMove);
+			this.canvas.removeEventListener('touchend', this.boundHandleInteractionEnd);
 		}
+	}
+	public updateUsername(username: string) {
+		this.username = username
 	}
 }

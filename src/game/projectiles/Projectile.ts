@@ -48,7 +48,7 @@ export default class Projectile {
     }
 
     // Update projectile position
-    public update(deltaTime: number) {
+    public update(deltaTime: number, isSpriteUpdate: boolean = true) {
         const dx = this.directionX * this.speed * deltaTime;
         const dy = this.directionY * this.speed * deltaTime;
 
@@ -60,6 +60,7 @@ export default class Projectile {
         if (this.distanceTraveled >= this.maxDistance) {
             this.alive = false;
         }
+        if (isSpriteUpdate)
         this.sprite.update();
     }
 

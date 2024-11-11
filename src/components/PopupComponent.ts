@@ -1,7 +1,7 @@
 import Sprite from "../game/Sprite";
 import { primaryColorBackground, darkGreenText, grayBackground, darkGrayBackground, lightGrayBackground, grayText, lightBlueButton } from "../game/colors";
 import { Stats, WeaponStats } from "../game/types";
-import { drawRoundedBox, wrapText, levelToGold, drawCenteredText, getSprite } from "../game/utils";
+import { drawRoundedBox, wrapText, levelToGold, drawCenteredText, getSprite, getBackgroundRarity } from "../game/utils";
 import { Button } from "./Button";
 import { ImageButton } from "./ImageButton";
 export class PopupComponent {
@@ -18,6 +18,7 @@ export class PopupComponent {
     private itemSprite: Sprite | null = null;
     private title: string;
     private type: string = "weapon";
+    private index: number | null = null;
     private description: string = "Common spear that is easy to use and make. Good weapon for beginners.";
     private weaponStat: WeaponStats = {
         level: 1,
@@ -30,13 +31,14 @@ export class PopupComponent {
       };
     private buttonTitle: string = "";
 
-    //   private levelUpWeapon: () => void;
+    public levelUpWeapon: () => void;
 
     constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', levelUpWeapon: () => void, handleExit: () => void, rarity: string = "gray", buttonTitle: string = "Level up") {
         this.isVisible = false;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.title = title;
+        this.levelUpWeapon = levelUpWeapon;
         this.exitButton = new ImageButton(0.8, 0.21, 0.1, 0.06, 'ui/closeIcon.png', handleExit.bind(this));
         this.rarity = rarity;
         this.buttonTitle = buttonTitle;
@@ -87,7 +89,8 @@ export class PopupComponent {
 
         // Draw ItemBox
         const squareSize = Math.min(this.canvasWidth, this.canvasHeight) * 0.2;
-        drawRoundedBox(context, this.canvasWidth * 0.15, this.canvasHeight * 0.3, squareSize, squareSize, 3, this.itemBackground, 3, false, 1, true);
+        const background = getBackgroundRarity(this.rarity);
+        drawRoundedBox(context, this.canvasWidth * 0.15, this.canvasHeight * 0.3, squareSize, squareSize, 3, background, 3, false, 1, true);
         this.itemSprite?.render(context, this.canvasWidth * 0.18, this.canvasHeight * 0.32, 1.5 * scaleFactor);
         context.fillStyle = "black";
         context.font = `${this.canvasHeight * 0.02}px arial`;
@@ -124,11 +127,10 @@ export class PopupComponent {
         this.useButton?.render(context);
     }
     handleClick(x: number, y: number, devicePixelRatio: number) {
-        console.log("exit")
         this.exitButton.handleClick(x, y, this.canvasWidth, this.canvasHeight);
         this.useButton?.handleClick(x * devicePixelRatio, y * devicePixelRatio, devicePixelRatio);
     }
-    updateInfo(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, itemSprite?: Sprite, type?: string}) {
+    updateInfo(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, itemSprite?: Sprite, type?: string, index?: number, updateFN? : () => {}}) {
         console.log("item popup component", inventory)
         if (inventory.title) {
             this.title = inventory.title;
@@ -143,7 +145,7 @@ export class PopupComponent {
             this.weaponStat.level = inventory.level;
             const cost = levelToGold(inventory.level);
             if (this.useButton)
-            this.useButton.text = this.buttonTitle + ":" + cost;
+            this.useButton.text = this.buttonTitle === "Equip" ? this.buttonTitle : this.buttonTitle + ":" + cost;
 
         }
         if (inventory.itemSprite) {
@@ -152,6 +154,14 @@ export class PopupComponent {
         if (inventory.type) {
             this.type = inventory.type;
         }
+        if (inventory.index) {
+            this.index = inventory.index;
+        }
+        if (inventory.updateFN && this.useButton) {
+            this.levelUpWeapon = inventory.updateFN;
+            this.useButton.onClick = inventory.updateFN;
+        }
+        console.log("this index", this.index)
     }
     // levelUp() {
     //     console.log("leveling up")
@@ -161,7 +171,7 @@ export class PopupComponent {
         this.weaponStat = weapons;
         const sprite = getSprite(weapons.name);
         this.itemSprite = sprite;
-        
+
     }
     
 };

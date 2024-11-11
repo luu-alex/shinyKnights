@@ -1,21 +1,25 @@
-import { upgradeCharacter } from "../apiCalls/serverCalls";
+import { equipWeaponAPI, upgradeCharacter } from "../apiCalls/serverCalls";
 import Sprite from "../game/Sprite";
-import { customizeBackground, darkBlueText, darkBrownBackground, primaryBrownBackground, lightBrownBackground, grayBackground, primaryColorBackground, darkGreenText, redText } from "../game/colors";
+import { customizeBackground, darkBlueText, darkBrownBackground, primaryBrownBackground, lightBrownBackground, grayBackground, primaryColorBackground, darkGreenText, redText, rareBackground } from "../game/colors";
 import { Characters, Stats, Weapons } from "../game/types";
-import { drawCenteredText, drawRoundedBox, getSprite } from "../game/utils";
+import { drawCenteredText, drawRoundedBox, getBackgroundRarity, getDescription, getSprite } from "../game/utils";
 import { BoxComponent } from "./BoxComponent";
 import { Button } from "./Button";
 import { CharacterPopupComponent } from "./CharacterPopupcomponent";
+import { LoadingComponent } from "./LoadingComponent";
 import { PopupComponent } from "./PopupComponent";
 
 export class CustomizationComponent {
     private canvasWidth;
     private canvasHeight;
     private choosePlayerButton: Button | null = null;
-    private choosePetButton: Button | null = null;
+    private chooseWeaponButton: Button | null = null;
     private chooseWeaponBox: BoxComponent | null = null;
     private playerBox: BoxComponent[] =  [];
+    private weaponsBox: BoxComponent[] =  [];
     private characterPopupVisible: boolean = false;
+    private isLoading: boolean = false;
+    private loadingComponent: LoadingComponent | null = null;
 
     // sprites
     private wardenSprite: Sprite;
@@ -24,6 +28,7 @@ export class CustomizationComponent {
     private swordsmanSprite: Sprite;
     private druidSprite: Sprite;
     private characterData: {sprite: Sprite, name: string, description: string, rarity: string, unlocked: boolean}[] = [];
+    private weaponsData: {sprite: Sprite, name: string, description: string, rarity: string, level: number, stats: Stats}[] = [];
     private weaponSprite: Sprite;
     private swordIconSprite: Sprite;
     private heartIconSprite: Sprite; 
@@ -32,8 +37,10 @@ export class CustomizationComponent {
     private characters: Characters | null = null;
     // popup component
     private itemPopupComponent: PopupComponent | null = null;
+    private weaponPopupComponent: PopupComponent | null = null;
     private characterPopupComponent: CharacterPopupComponent | null = null;
     private popupVisible: boolean = false;
+    private weaponPopupVisible: boolean = false;
     private gold: number = 0;
     private upgradeWeapon: (weaponNumber: number) => void;
     private weapons: Weapons | null = null;
@@ -41,12 +48,14 @@ export class CustomizationComponent {
     private fetchProfile: () => void;
     private username: string = "";
     private characterName: string = "";
+    private inventoryToggle: "characters" | "weapons" = "characters";
 
     constructor(canvasWidth: number, canvasHeight: number, upgradeWeapon: (weaponNumber: number) => void, fetchProfile: () => void) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.fetchProfile = fetchProfile;
         this.upgradeWeapon = upgradeWeapon;
+        this.loadingComponent = new LoadingComponent(canvasWidth, canvasHeight);
         this.choosePlayerButton = new Button(
             this.canvasWidth * 0.05,
             this.canvasHeight * 0.54,
@@ -55,18 +64,30 @@ export class CustomizationComponent {
             "Characters",
             () => {
                 console.log("Choose Player");
+                this.inventoryToggle = "characters";
+                if (this.choosePlayerButton)
+                    this.choosePlayerButton.color = darkBrownBackground 
+                if (this.chooseWeaponButton) {
+                    this.chooseWeaponButton.color = primaryBrownBackground;
+                }
             },
             darkBrownBackground,
             this.canvasHeight * 0.03
         );
-        this.choosePetButton = new Button(
+        this.chooseWeaponButton = new Button(
             this.canvasWidth * 0.5,
             this.canvasHeight * 0.54,
             this.canvasWidth * 0.45,
             this.canvasHeight * 0.055,
             "Weapons",
             () => {
-                console.log("Choose Player");
+                console.log("Choose weapon");
+                this.inventoryToggle = "weapons";
+                if (this.choosePlayerButton)
+                    this.choosePlayerButton.color = primaryBrownBackground 
+                if (this.chooseWeaponButton) {
+                    this.chooseWeaponButton.color = darkBrownBackground;
+                }
             },
             primaryBrownBackground,
             this.canvasHeight * 0.03
@@ -85,6 +106,7 @@ export class CustomizationComponent {
 
         // Create the popup component
         this.itemPopupComponent = new PopupComponent(this.canvasWidth, this.canvasHeight, "", this.levelingWeapon.bind(this), this.closePopup.bind(this), "gray", "Level up");
+        this.weaponPopupComponent = new PopupComponent(this.canvasWidth, this.canvasHeight, "", this.levelingWeapon.bind(this), this.closeWeaponPopup.bind(this), "gray", "Equip");
         this.characterPopupComponent = new CharacterPopupComponent(this.canvasWidth, this.canvasHeight, "Character", this.levelingCharacter.bind(this), this.closeCharacterPopup.bind(this), "gray", "Level up");
         this.characterName = this.currentCharacter
         this.characterData = [{sprite: this.wardenSprite, name: "knight", description: "A knight in shining armor", rarity: "Common", unlocked: true }, {sprite:this.swordsmanSprite, name: "swordsmaster", description: "Juggles swords", rarity: "Rare", unlocked: false}, {sprite: this.druidSprite, name: "druid", description: "A druid that can summon animals", unlocked: false, rarity: "Epic"}];
@@ -118,7 +140,7 @@ export class CustomizationComponent {
         context.stroke();
 
         this.choosePlayerButton?.render(context);
-        this.choosePetButton?.render(context);
+        this.chooseWeaponButton?.render(context);
 
         // draw perfect squares
         const squareSize = Math.min(this.canvasWidth, this.canvasHeight) * 0.17;
@@ -137,8 +159,8 @@ export class CustomizationComponent {
             { sprite: this.swordsmanIcon, index: 1 },
             { sprite: this.druidSpriteIcon, index: 2 }
         ];
-        
-        characterData.forEach(({ sprite, index }) => {
+        if (this.inventoryToggle === "characters") {
+            characterData.forEach(({ sprite, index }) => {
             // drawRoundedBox(context, this.canvasWidth * 0.05 + (squareSize * index) + index * this.canvasWidth * 0.01, this.canvasHeight * 0.62, squareSize, squareSize, 10, lightBrownBackground, 2);
             // this.playerBox?[index].render(context);
             this.playerBox[index].render(context, this.canvasWidth * 0.05 + (squareSize * index) + index * this.canvasWidth * 0.01, this.canvasHeight * 0.62, squareSize, squareSize, 10, lightBrownBackground, 2);
@@ -155,13 +177,42 @@ export class CustomizationComponent {
             const offsetY = (squareSize - scaledHeight);
         
             // Render the sprite centered in the square
-            sprite.render(
-                context,
-                xPosition + offsetX,
-                yPosition + offsetY,
-                2.5 * scaleFactor
-            );
-        });
+                sprite.render(
+                    context,
+                    xPosition + offsetX,
+                    yPosition + offsetY,
+                    2.5 * scaleFactor
+                );
+            });
+        } else {
+            this.weaponsData.forEach(({ sprite, }, index) => {
+                // drawRoundedBox(context, this.canvasWidth * 0.05 + (squareSize * index) + index * this.canvasWidth * 0.01, this.canvasHeight * 0.62, squareSize, squareSize, 10, lightBrownBackground, 2);
+                // this.playerBox?[index].render(context);
+                let color = getBackgroundRarity(this.weaponsData[index].rarity);
+                this.weaponsBox[index].render(context, this.canvasWidth * 0.05 + (squareSize * index) + index * this.canvasWidth * 0.01, this.canvasHeight * 0.62, squareSize, squareSize, 10, color, 2);
+    
+                const xPosition = this.canvasWidth * 0.07 + (squareSize * index) + index * this.canvasWidth * 0.01;
+                const yPosition = this.canvasHeight * 0.62;
+                
+                // Calculate the sprite's scaled dimensions
+                // const scaledWidth = sprite.frameWidth * 1.5 * scaleFactor;
+                const scaledHeight = sprite.frameHeight * 1.5 * scaleFactor;
+            
+                // Calculate the offset to center the sprite within the square
+                // const offsetX = (squareSize - scaledWidth);
+                const offsetY = (squareSize - scaledHeight);
+            
+                // Render the sprite centered in the square
+                    sprite.render(
+                        context,
+                        xPosition,
+                        yPosition + offsetY,
+                        1.5 * scaleFactor
+                    );
+                });
+
+        }
+        
 
         // draw character in main customize square
         context.fillStyle = darkBlueText;
@@ -174,7 +225,8 @@ export class CustomizationComponent {
         this.wardenSprite.render(context, this.canvasWidth * 0.25, this.canvasHeight * 0.2, 5 * scaleFactor);
 
         // draw equipment square
-        this.chooseWeaponBox?.render(context, this.canvasWidth * 0.09, this.canvasHeight * 0.35, squareSize, squareSize, 5, grayBackground, 3, true, 5);
+        const color = this.weapons[this.currentWeapon].rarity === "rare" ? rareBackground : grayBackground
+        this.chooseWeaponBox?.render(context, this.canvasWidth * 0.09, this.canvasHeight * 0.35, squareSize, squareSize, 5, color, 3, true, 5);
         // draw weapon in equipment square
         this.weaponSprite.render(context, this.canvasWidth * 0.11, this.canvasHeight * 0.36, 1.5 * scaleFactor);
         context.fillStyle = "white";
@@ -203,6 +255,10 @@ export class CustomizationComponent {
             this.itemPopupComponent?.render(context);
             return;
         }
+        // console.log("popupvisible",this.weaponPopupVisible)
+        if (this.weaponPopupVisible && this.weaponPopupComponent) {
+            this.weaponPopupComponent.render(context);
+        }
         if (this.characterPopupVisible) {
             // make background darker
             context.fillStyle = "rgba(0, 0, 0, 0.5)";
@@ -211,6 +267,9 @@ export class CustomizationComponent {
             this.characterPopupComponent?.render(context);
             return;
         }
+        if (this.isLoading && this.loadingComponent) {
+            this.loadingComponent.render(context);
+          }
     }
 
     update(){
@@ -220,40 +279,61 @@ export class CustomizationComponent {
     }
 
     handleClick(x: number, y: number, devicePixelRatio: number) {
-        this.choosePlayerButton?.handleClick(x, y, devicePixelRatio);
-        this.choosePetButton?.handleClick(x, y, devicePixelRatio);
-        this.chooseWeaponBox?.handleClick(x, y, devicePixelRatio);
-
         if (this.characterPopupVisible) {
             this.characterPopupComponent?.handleClick(x, y, devicePixelRatio);
             return
         }
-        for (let i = 0; i < this.characterData.length; i++) {
-            if (this.playerBox[i].isClicked(x, y, devicePixelRatio)) {
-                this.characterPopupVisible = true;
-                const { name, sprite, description, rarity, unlocked } = this.characterData[i];
-                if (this.characters)
-                console.log("characters", this.characters[name as keyof Characters]?.stats)
-                if (this.currentCharacter) {
-                    this.currentCharacter = name;
-                }
-                let title = "";
-                if (name === "knight") {
-                    title = "Knight"
-                } else if (name === "swordsmaster") {
-                    title = "Swords Master"
-                } else if (name === "druid") {
-                    title = "Druid"
-                }
-                console.log("title", title)
-                const characterStats = this.characters ? this.characters[name as keyof Characters]?.stats : undefined;
-                if (!characterStats) return;
-                if (this.characters) {
-                    this.characterPopupComponent?.updateInfo(sprite, title, description, characterStats, rarity, this.characters[name as keyof Characters]?.level, unlocked);
+        if (this.weaponPopupVisible) {
+            this.weaponPopupComponent?.handleClick(x / devicePixelRatio, y / devicePixelRatio, devicePixelRatio);
+            return
+        }
+        this.choosePlayerButton?.handleClick(x, y, devicePixelRatio);
+        this.chooseWeaponButton?.handleClick(x, y, devicePixelRatio);
+        this.chooseWeaponBox?.handleClick(x, y, devicePixelRatio);
 
-                }
 
-            };
+        if (this.inventoryToggle === "characters") {
+            for (let i = 0; i < this.characterData.length; i++) {
+                if (this.playerBox[i].isClicked(x, y, devicePixelRatio)) {
+                    this.characterPopupVisible = true;
+                    const { name, sprite, description, rarity, unlocked } = this.characterData[i];
+                    if (this.characters)
+                    // console.log("characters", this.characters[name as keyof Characters]?.stats)
+                    if (this.currentCharacter) {
+                        this.currentCharacter = name;
+                    }
+                    let title = "";
+                    if (name === "knight") {
+                        title = "Knight"
+                    } else if (name === "swordsmaster") {
+                        title = "Swords Master"
+                    } else if (name === "druid") {
+                        title = "Druid"
+                    }
+                    const characterStats = this.characters ? this.characters[name as keyof Characters]?.stats : undefined;
+                    if (!characterStats) return;
+                    if (this.characters) {
+                        this.characterPopupComponent?.updateInfo(sprite, title, description, characterStats, rarity, this.characters[name as keyof Characters]?.level, unlocked);
+                    }
+
+                };
+            }
+        }
+        if (this.inventoryToggle === "weapons") {
+            for (let i = 0; i < this.weaponsData.length; i++) {
+                if (this.weaponsBox[i].isClicked(x, y, devicePixelRatio) && this.weaponPopupComponent) {
+                    // console.log(" updating info", this.weaponsData[i])
+                    const sprite = getSprite(this.weaponsData[i].name);
+                    this.weaponPopupComponent.updateInfo({... this.weaponsData[i], title: this.weaponsData[i].name, itemSprite: sprite, index: i, updateFN: () => this.equipWeapon(i)});
+                    this.weaponPopupComponent.levelUpWeapon = () => {
+                        this.equipWeapon(i);
+                    }
+                    this.weaponPopupComponent.isVisible = true;
+                    this.weaponPopupVisible = true;
+                    // this.currentWeapon = i;
+                    // this.itemPopupComponent?.updateWeapon(this.weapons[i]);
+                };
+            }
         }
         if (this.popupVisible) {
             this.itemPopupComponent?.handleClick(x / devicePixelRatio, y / devicePixelRatio, devicePixelRatio);
@@ -271,27 +351,53 @@ export class CustomizationComponent {
     showCharacterPopup() {
         this.characterPopupVisible = true;
     }
+    showWeaponPopup() {
+        this.weaponPopupVisible = true;
+    }
     closeCharacterPopup() {
         this.characterPopupVisible = false;
     }
 
-    updateWeaponPopup(inventory : {title: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, gold?: number}) {
+    updateWeaponPopup(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, gold?: number}) {
+        // console.log("update weapon popup", inventory.currentWeapon)
         this.itemPopupComponent?.updateInfo(inventory);
+        if (inventory.currentWeapon && this.weapons) {
+            this.weaponSprite = getSprite(this.weapons[inventory.currentWeapon].name);
+            this.currentWeapon = inventory.currentWeapon;;
+        }
     }
-    updateWeapon(weapons: Weapons) {
+    updateWeapon(weapons: Weapons, currentWeapon: number) {
+        // console.log("update weapons", weapons)
+        // console.log("current weapon",this.currentWeapon);
         this.weapons = weapons;
+        this.currentWeapon = currentWeapon;
         this.itemPopupComponent?.updateWeapon(this.weapons[this.currentWeapon]);
         if (weapons[this.currentWeapon]) {
             const sprite = getSprite(this.weapons[this.currentWeapon].name);
             this.weaponSprite = sprite
         }
+        this.weaponsData = [];
+        this.weaponsBox = [];
+        for (let i=0; i < weapons.length; i++) {
+            const { level, stats, rarity, name }  = weapons[i];
+            const sprite = getSprite(name);
+            const description = getDescription(name);
+            this.weaponsData.push({sprite, level, stats, rarity, name, description })
+
+            const squareSize = Math.min(this.canvasWidth, this.canvasHeight) * 0.17;
+            // this.weaponsBox.push(new BoxComponent(this.canvasWidth * 0.05 + (this.canvasWidth * 0.17 * i) + i * this.canvasWidth * 0.01, this.canvasHeight * 0.62 + this.canvasHeight * 0.17, this.canvasWidth * 0.17, this.canvasHeight * 0.17, this.showPopup.bind(this)));
+
+            this.weaponsBox.push(new BoxComponent(this.canvasWidth * 0.05 + (squareSize * i) + i * this.canvasWidth * 0.01, this.canvasHeight * 0.62, squareSize, squareSize, this.showWeaponPopup.bind(this)));
+        }
+        // console.log("this weapons data", this.weaponsData)
+        // console.log(this.weaponsBox);
     }
     updateCharacter(currentCharacter: string) {
         this.currentCharacter = currentCharacter;
     }
     updateCharacterPopup(character : Characters) {
         this.characters = character;
-        console.log("update character popup", character)
+        // console.log("update character popup", character)
         if (this.characterPopupComponent) {
             this.characterPopupComponent.playerStats = character[this.currentCharacter as keyof Characters].stats;
             this.characterPopupComponent.level = character[this.currentCharacter as keyof Characters].level;
@@ -308,6 +414,9 @@ export class CustomizationComponent {
         this.upgradeWeapon(this.currentWeapon);
         // this.updateProfile()
     }
+    closeWeaponPopup() {
+        this.weaponPopupVisible = false;
+    }
 
     async levelingCharacter() {
         console.log("leveling character")
@@ -315,4 +424,12 @@ export class CustomizationComponent {
         await this.fetchProfile();
         console.log("leveling asdas")
     };
+    async equipWeapon(index: number) {
+        console.log("calling equip weapon", index);
+        this.isLoading = true;
+        await equipWeaponAPI(this.username, index)
+        await this.fetchProfile();
+        this.isLoading = false;
+        this.closeWeaponPopup();
+    }
 };

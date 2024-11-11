@@ -1,7 +1,7 @@
 import '../game/fonts/fonts.module.css';
 export class Button {
 	public isHovered: boolean;
-	private color: string;
+	public color: string;
 	private fontSize: number;
 	private fontColor = 'white';
 
@@ -11,7 +11,7 @@ export class Button {
 		public width: number,
 		public height: number,
 		public text: string,
-		private onClick: () => void,
+		public onClick: () => void,
 		color: string,
 		fontSize: number,
 		fontColor?: string,

@@ -2,8 +2,9 @@ import EnemyManager from './EnemyManager';
 import Player from './Player';
 import SkeletonWarrior from './SkeletonWarrior';
 import Ghoul from './Ghoul';
-// import Banshee from './Banshee';
+import Banshee from './Banshee';
 import SkeletonMage from './SkeletonMage';
+import Enemy from './Enemy';
 
 export default class EnemySpawner {
     private enemyManager: EnemyManager;
@@ -23,7 +24,7 @@ export default class EnemySpawner {
         this.difficultyIncreaseRate = difficultyIncreaseRate; // Decrease interval over time to increase difficulty
 
         // Different enemy types to randomly choose from
-        this.enemyTypes = [SkeletonWarrior, Ghoul, SkeletonMage];
+        this.enemyTypes = [SkeletonWarrior, Ghoul];
     }
 
     // Update the spawner every frame
@@ -53,5 +54,11 @@ export default class EnemySpawner {
 
         const newEnemy = new EnemyClass(spawnX, spawnY, this.player);
         this.enemyManager.addEnemy(newEnemy);
+    }
+    public pushSkeletonMage() {
+        this.enemyTypes.push(SkeletonMage);
+    }
+    public pushBanshee() {
+        this.enemyTypes.push(Banshee)
     }
 }

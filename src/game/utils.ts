@@ -2,6 +2,10 @@ import Pet from './Pets/Pet';
 import Sprite from './Sprite';
 import Enemy from './classes/Enemy';
 import Player from './classes/Player';
+import { darkGrayBackground, grayBackground, rareBackground, uncommonBackground } from './colors';
+import Dagger from './weapon/Dagger';
+import Spear from './weapon/Spear';
+import Sword from './weapon/Sword';
 
 // Helper function to check AABB collision between two enemies
 export function isColliding(enemyA: Enemy | Player | Pet, enemyB: Enemy): boolean {
@@ -188,6 +192,8 @@ export const getSprite = (name: string) => {
         return new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100);
     } else if (name === "dagger") {
         return new Sprite('weaponIcons/dagger.png', 32, 32, 4, 100);
+    } else if (name ==="sword") {
+        return new Sprite('weaponIcons/sword.png', 32, 32 , 1, 100);
     }
     return new Sprite('weaponIcons/basicSpear.png', 32, 32, 4, 100);
 }
@@ -204,4 +210,29 @@ export const getTitle = (name: string) => {
         return "Basic Chest"
     }
     return ""
+}
+
+export const getBackgroundRarity = (rarity: string) => {
+    if (rarity === "common") {
+        return darkGrayBackground;
+    } else if (rarity === "rare") {
+        return rareBackground;
+    } else if (rarity === "uncommon") {
+        return uncommonBackground
+    } else {
+        return darkGrayBackground;
+    }
+
+}  
+
+export const getWeapon =  (name: string) => {
+    console.log("getwepaon",name);
+    if (name === "spear") {
+        return new Spear();
+    } else if (name === "dagger") {
+        return new Dagger();
+    } else if (name === "sword") {
+        return new Sword();
+    }
+    return new Spear();
 }

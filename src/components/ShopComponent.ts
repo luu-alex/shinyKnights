@@ -4,6 +4,7 @@ import { ShopItem } from "../game/types";
 import { drawRoundedBox, getSprite } from "../game/utils";
 import { ShopItemComponent } from "./ShopItemComponent";
 import { buyItem } from "../apiCalls/serverCalls";
+import { LoadingComponent } from "./LoadingComponent";
 
 export class ShopComponent {
     private canvasWidth: number;
@@ -11,31 +12,20 @@ export class ShopComponent {
     private scrollY: number;  // Current scroll position
     private maxScrollY: number;  // Maximum scroll position
     private lastTouchY: number | null = null;  // Last touch position
-    private shop1: {
-        shopIcon: Sprite,
-        title: string,
-        currency: string,
-        cost: number,
-        type: string
-    } | null = null;
     private shopItemComponents: ShopItemComponent[] = [];
     private shopItems: ShopItem[] = [];
     private username: string = "";
     private fetchProfile: () => void;
+    private isLoading : boolean = false;
+    private loadingComponent: LoadingComponent;
 
     constructor(canvasWidth: number, canvasHeight: number, fetchProfile: () => void) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.scrollY = 0;  // Start at the top
         this.maxScrollY = 10000;  // Will be calculated based on content height
-        this.shop1 = {
-            shopIcon: new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100),
-            title: "Chest",
-            currency: "Gold",
-            cost: 100,
-            type: "Weapon"
-        }
         this.fetchProfile = fetchProfile;
+        this.loadingComponent = new LoadingComponent(canvasWidth, canvasHeight);
     }
 
     // Handle touch start to record the initial touch position
@@ -72,7 +62,6 @@ export class ShopComponent {
 
     render(context: CanvasRenderingContext2D) {
         // Clear the canvas before rendering
-        if (this.shop1 === null) return;
         context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
         context.fillStyle = blueBackground;
         context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
@@ -131,6 +120,9 @@ export class ShopComponent {
 
         // Restore the context (undo the translation)
         context.restore();
+        if (this.isLoading) {
+            this.loadingComponent.render(context);
+        }
     }
     updateShop(dailyShop: ShopItem[], username: string) {
         console.log("daily shop", dailyShop);
@@ -149,9 +141,11 @@ export class ShopComponent {
         this.shopItemComponents = shopItemComponents;
     }
 
-    purchaseItem(index: number) { 
+    async purchaseItem(index: number) { 
+        this.isLoading = true;
         console.log("purchasing item", index)
-        buyItem(this.username, index);
-        this.fetchProfile();
+        await buyItem(this.username, index);
+        await this.fetchProfile();
+        this.isLoading = false;
     }
 }

@@ -78,17 +78,34 @@ export class InventoryComponent {
                 // drawRoundedBox(context, this.canvasWidth * 0.05 + (squareSize * i) + i * this.canvasWidth * 0.01, this.canvasHeight * 0.3 + squareSize + this.canvasHeight * 0.02 + this.canvasHeight * 0.02 * j, squareSize, squareSize, 10, darkBrownBackground, 2);
             }
         }
-        let j = 0;
         for (let i = 0; i < this.itemData.length; i++) {
-            if (i > 4) {
-                j += 1;
-            }
-            const item = this.itemData[i];
-            const box = this.itemBox[i];
-            const color = this.itemData[i].rarity === "common" ? "gray" : this.itemData[i].rarity === "rare" ? "blue" : this.itemData[i].rarity === "epic" ? "purple" : lightBrownBackground;
-            box.render(context, this.canvasWidth * 0.02 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * j, squareSize, squareSize, 6, color, 2)
-            item.sprite.render(context, this.canvasWidth * 0.04 + (squareSize * i) + i * this.canvasWidth * 0.02, this.canvasHeight * 0.39 + this.canvasHeight * 0.11 * Math.floor(i / 5), 1.5);
-        }
+        const column = Math.floor(i / 5);
+        const row = i % 5;
+        const item = this.itemData[i];
+        const box = this.itemBox[i];
+
+        const boxX = this.canvasWidth * 0.02 + (squareSize * row) + row * this.canvasWidth * 0.02;
+        const boxY = this.canvasHeight * 0.35 + this.canvasHeight * 0.11 * column;
+        const color = item.rarity === "common" ? "gray" : item.rarity === "rare" ? "blue" : item.rarity === "epic" ? "purple" : lightBrownBackground;
+        const customScale = 1;
+        const translate = {x: 0, y:0}
+        // Render the item box
+        box.render(context, boxX, boxY, squareSize, squareSize, 6, color, 2);
+
+        // Calculate scale and position for the sprite inside the box
+        const targetSpriteSize = 50;
+        const baseScaleFactor = targetSpriteSize / Math.max(item.sprite.frameWidth, item.sprite.frameHeight);
+        const scaleFactor = baseScaleFactor * (customScale ?? 1);
+
+        const scaledWidth = item.sprite.frameWidth * scaleFactor;
+        const scaledHeight = item.sprite.frameHeight * scaleFactor;
+
+        const spriteX = boxX + (squareSize - scaledWidth) / 2 + (translate?.x ?? 0);
+        const spriteY = boxY + (squareSize - scaledHeight) / 2 + (translate?.y ?? 0);
+
+        // Render the sprite with scaling and centering
+        item.sprite.render(context, spriteX, spriteY, scaleFactor);
+    }
         if (this.isLoading) {
             this.loadingComponent.render(context);
         }

@@ -6,6 +6,7 @@ import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { SceneManager } from './scenes/SceneManager';
 import { lighterGreenBackground } from './colors';
 import { getDailyShop, updateProfile, upgradeWeapon } from '../apiCalls/serverCalls';
+import GameScene from './scenes/GameScene';
 const serverURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5001";
 // console.log("server url ", serverURL);
 // const localURL = "http://localhost:5001"
@@ -48,6 +49,37 @@ const CanvasGame: React.FC = () => {
 			console.error('Error fetching or creating profile.', err);
 		}
 	};
+
+	const createMenuScene = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+		console.log("creating menuscene", canvas)
+		// if (canvas) {
+		// }
+		const menuScene = new MenuScene(sceneManagerRef.current, fetchOrCreateProfile, levelUpWeapon, createMenuScene);
+		menuSceneRef.current = menuScene;
+		sceneManagerRef.current.changeScene(menuScene, canvas, context);
+		setCurrentScene(menuScene.sceneName);
+		// menuScene.init(canvas, context);
+		console.log("setting menu scene")
+		console.log("menusceneref",menuSceneRef.current)
+	}
+
+	// const createGameScene = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
+	// 	const gameScene = new GameScene(sceneManagerRef.current, fetchOrCreateProfile, levelUpWeapon, createMenuScene);
+	// 	sceneManagerRef.current.changeScene(gameScene, canvas, context); // Correctly set the current scene
+	// 	setCurrentScene(gameScene.sceneName);
+	// 	console.log("setting game scene");
+	// };
+
+	const removeAllEventListeners = () => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		canvas.replaceWith(canvas.cloneNode(true)); // This effectively removes all listeners
+		canvasRef.current = canvas; // Re-assign the reference after cloning
+	};
+
+// Call this function in CanvasGame before switching scenes:
+
 
 	const levelUpWeapon = async (weaponID: number) => {
 		console.log("calling")
@@ -99,22 +131,23 @@ const CanvasGame: React.FC = () => {
 
 		// updateProfile({
 		// 	username: userNameRef.current,
-		// 	// weapons: [{
-		// 	// 	level: 1,
-		// 	// 	stats: {
-		// 	// 	  attack: 5,
-		// 	// 	  defense: 5,
-		// 	// 	},
-		// 	// 	name: 'spear',
-		// 	// 	rarity: 'common'
-		// 	//   }
-		// 	// ],
-		// 	inventory: [{
-		// 		type: 'item',
-		// 		name: 'basicChest',
-		// 		id: 1,
-		// 		rarity: 'common'
-		// 	}]
+			// weapons: [{
+			// 	level: 1,
+			// 	stats: {
+			// 	  attack: 5,
+			// 	  defense: 5,
+			// 	},
+			// 	name: 'spear',
+			// 	rarity: 'common'
+			//   }
+			// ],
+			// inventory: [{
+			// 	type: 'item',
+			// 	name: 'basicChest',
+			// 	id: 1,
+			// 	rarity: 'common'
+			// }]
+		// 	gold: 1000
 		// })
 		
 	}, []); // Runs only once on mount
@@ -163,10 +196,7 @@ const CanvasGame: React.FC = () => {
 
 			// Initialize MenuScene only once
 			if (!menuSceneRef.current) {
-				const menuScene = new MenuScene(sceneManagerRef.current, fetchOrCreateProfile, levelUpWeapon);
-				menuSceneRef.current = menuScene;
-				sceneManagerRef.current.changeScene(menuScene, canvas, context);
-				setCurrentScene(menuScene.sceneName);
+				createMenuScene(canvas, context);
 			}
 		}
 	}, [profile]); // Run only when profile is loaded
@@ -174,8 +204,6 @@ const CanvasGame: React.FC = () => {
 	// Update the menuScene's properties when profile updates (don't recreate the scene)
 	useEffect(() => {
 		// profileRef.current = profile;
-		console.log("canvas game profile", profile);
-		console.log("canvas game dailyshop",);
 		if (menuSceneRef.current && profile) {
 			menuSceneRef.current.updateFromDatabase({
 				weapons: profile.weapons, 
@@ -195,9 +223,13 @@ const CanvasGame: React.FC = () => {
 	// Animation loop
 	useEffect(() => {
 		if (!canvasRef.current || !menuSceneRef.current) return;
+		console.log("re running animation loop")
 
 		const canvas = canvasRef.current as HTMLCanvasElement;
 		const context = canvas.getContext('2d');
+		if (currentScene === 'MenuScene') {
+			fetchOrCreateProfile();
+		}
 
 		const animationLoop = (time: number) => {
 			if (lastTimeRef.current === 0) {
@@ -216,6 +248,8 @@ const CanvasGame: React.FC = () => {
 				sceneManagerRef.current.currentScene &&
 				sceneManagerRef.current.currentScene.sceneName !== currentScene
 			) {
+				// console.log("setting current scene", sceneManagerRef.current.currentScene.sceneName)
+				// console.log(sceneManagerRef)
 				setCurrentScene(sceneManagerRef.current.currentScene.sceneName);
 			}
 			sceneManagerRef.current.render(); // Render the current scene
@@ -227,8 +261,7 @@ const CanvasGame: React.FC = () => {
 
 		// Cleanup on component unmount
 		return () => {
-			sceneManagerRef.current.currentScene?.destroy();
-		};
+    };
 	}, [currentScene]);
 
 	return (

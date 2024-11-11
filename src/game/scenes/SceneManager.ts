@@ -8,12 +8,17 @@ export class SceneManager {
 
 	// Initialize a new scene
 	changeScene(newScene: Scene, canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
+		if (this.currentScene === newScene) return; // Prevent re-setting the same scene
+    	console.log("Scene change to", newScene.sceneName);
 		if (this.currentScene) {
-			this.currentScene.destroy(); // Clean up the old scene
+			console.log("calling destroy", this.currentScene)
+			this.currentScene.destroy();
+			this.currentScene = null; // Clear the reference
 		}
 		this.currentScene = newScene;
-		this.currentScene.init(canvas, context); // Initialize the new scene
+		this.currentScene.init(canvas, context);
 	}
+	
 
 	// Call the render function of the current scene
 	render() {

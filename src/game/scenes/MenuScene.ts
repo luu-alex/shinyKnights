@@ -18,8 +18,8 @@ import { LoadingComponent } from '../../components/LoadingComponent';
 import { orderStatus, createOrder } from '../../apiCalls/aeonCalls';
 import { PurchasedGemsComponent } from '../../components/purchasedGemsComponent';
 import { InventoryComponent } from '../../components/InventoryComponent';
-import { PopupComponent } from '../../components/PopupComponent';
 import { Characters, Weapons, ItemInventory } from '../types';
+import { FailedOrderComponent } from '../../components/FailedOrderComponent';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -44,18 +44,19 @@ export default class MenuScene extends Scene {
   private purchaseGemsButton: ImageButton | null = null;
   private buyGemsComponent: BuyGemsComponent | null = null;
   private orderComponent: OrderComponent | null = null;
-  private isLoading: boolean = false;
+  private isLoading: boolean = true;
   private LoadingComponent: LoadingComponent | null = null;
   private purchasedGemsComponent: PurchasedGemsComponent | null = null;
   private InventoryComponent: InventoryComponent | null = null;
-  private popupComponent: PopupComponent | null = null;
   private gold: number = 0;
+  private failOrderComponent: FailedOrderComponent | null = null;
+
+
 
   public currentCharacter: string = "knight";
   public currentWeapon: number = 0;
   public characters: Characters | null  = null;
-  public weapons: Weapons = {
-    0: {
+  public weapons: Weapons = [{
         name: "spear",
         level: 1,
         stats: {
@@ -63,8 +64,7 @@ export default class MenuScene extends Scene {
           defense: 5,
         },
         rarity: "common"
-    }
-  }
+    }];
 
 
   private boundHandleClick: (event: MouseEvent) => void;
@@ -74,8 +74,9 @@ export default class MenuScene extends Scene {
 
   private fetchProfile: () => {};
   private levelUpWeapon: (weaponID: number) => void;
+  private createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void;
 
-  constructor(game: SceneManager, fetchProfile: () => {}, levelUpWeapon: (weaponID: number) => void) {
+  constructor(game: SceneManager, fetchProfile: () => {}, levelUpWeapon: (weaponID: number) => void, createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void) {
     super(game, 'MenuScene');
     this.canvas = null;
     this.context = null;
@@ -89,6 +90,7 @@ export default class MenuScene extends Scene {
     this.boundHandleTouchMove = this.handleTouchMove.bind(this);
     this.boundHandleTouchEnd = this.handleTouchEnd.bind(this);
     this.levelUpWeapon = levelUpWeapon;
+    this.createMenuScene = createMenuScene;
     
   }
 
@@ -96,6 +98,7 @@ export default class MenuScene extends Scene {
     this.canvas = canvas;
     this.context = context;
     this.isRunning = true;
+    console.log("init menu scene")
 
     const canvasWidth = this.canvas.width / this.devicePixelRatio;
     const canvasHeight = this.canvas.height / this.devicePixelRatio;
@@ -125,7 +128,7 @@ export default class MenuScene extends Scene {
     this.shopComponent = new ShopComponent(canvasWidth, canvasHeight, this.fetchProfile);
     this.purchasedGemsComponent = new PurchasedGemsComponent(canvasWidth, canvasHeight);
     this.InventoryComponent = new InventoryComponent(canvasWidth, canvasHeight, this.fetchProfile);
-
+    this.failOrderComponent = new FailedOrderComponent(canvasWidth, canvasHeight);
 
     // Add event listeners to handle interaction with the start button
     this.canvas.addEventListener('click', this.boundHandleClick);
@@ -166,7 +169,7 @@ export default class MenuScene extends Scene {
     if (name === "customize") {
       this.customizeComponent?.updateWeaponPopup({title: this.weapons[this.currentWeapon].name, stats: this.weapons[this.currentWeapon].stats, level: this.weapons[this.currentWeapon].level, currentWeapon: this.currentWeapon});
       this.customizeComponent?.updateGold(this.gold);
-      this.customizeComponent?.updateWeapon(this.weapons);
+      this.customizeComponent?.updateWeapon(this.weapons, this.currentWeapon);
       if (this.characters) {
         this.customizeComponent?.updateCharacterPopup(this.characters);
         this.customizeComponent?.updateCharacter(this.currentCharacter);
@@ -209,6 +212,7 @@ export default class MenuScene extends Scene {
 
 
   private handleClick(event: MouseEvent) {
+    console.log("clicking")
     if (!this.canvas) return;
 
     const rect = this.canvas.getBoundingClientRect();
@@ -247,6 +251,10 @@ export default class MenuScene extends Scene {
       this.purchasedGemsComponent.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
       return;
     }
+    if (this.failOrderComponent && this.failOrderComponent.isVisible) {
+      this.failOrderComponent?.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      return;
+    }
     if (this.mode === "shop") {
       this.shopComponent?.handleClick(mouseX, mouseY, this.devicePixelRatio);
     }
@@ -278,9 +286,8 @@ export default class MenuScene extends Scene {
       this.gems += 100;
       this.page = "purchasedGems";
       this.purchasedGemsComponent?.show();
-    } else {
-      // this.page = "orderFailed";
-      this.page= "purchasedGems";
+    } else {;
+      this.failOrderComponent?.show();
     }
     this.isLoading = false;
     this.fetchProfile();
@@ -293,7 +300,8 @@ export default class MenuScene extends Scene {
     this.isRunning = false; // Stop rendering the menu scene
 
     if(this.canvas && this.context){
-      const gameScene = new GameScene(this.game); 
+      const gameScene = new GameScene(this.game, {currentWeapon: this.currentWeapon, currentCharacter: this.currentCharacter, weapons: this.weapons}, this.fetchProfile, this.levelUpWeapon, this.createMenuScene); 
+      gameScene.updateUsername(this.username);
       this.game.changeScene(gameScene, this.canvas, this.context);
     }
   }
@@ -357,13 +365,16 @@ export default class MenuScene extends Scene {
     if (this.purchasedGemsComponent?.isVisible && this.purchasedGemsComponent) {
       this.purchasedGemsComponent?.render(this.context);
     }
-    if (this.page ==="orderfailed") {
+    if (this.failOrderComponent?.isVisible) {
+      this.failOrderComponent?.render(this.context);
 
     }
-    this.popupComponent?.render(this.context);
+    
+    // this.gameOverComponent?.render(this.context);
     
   }
   destroy() {
+    console.log("destory menu scene")
     if (this.canvas) {
       // Remove event listeners when the scene is destroyed
       this.canvas.removeEventListener('click', this.boundHandleClick);
@@ -374,7 +385,7 @@ export default class MenuScene extends Scene {
   }
 
   updateFromDatabase(profile: {gold?: number, gems?: number, level?: number, username?: string, weapons?: Weapons, characters?: Characters, currentCharacter?: string, currentWeapon?: number, inventory?: ItemInventory[]}) {
-    console.log("updating from database", profile);
+    // console.log("updating from database", profile);
     if (profile.gems) this.gems = profile.gems;
     if (profile.level) this.level = profile.level;
     if (profile.username) {
@@ -382,12 +393,14 @@ export default class MenuScene extends Scene {
       this.customizeComponent?.updateUsername(this.username);
       this.InventoryComponent?.updateUsername(this.username);
     }
-    if (profile.currentWeapon && this.customizeComponent) {
-      this.customizeComponent.currentWeapon = profile.currentWeapon;
+    if (profile.currentWeapon?.toString()  && this.customizeComponent) {
+      this.customizeComponent.updateWeaponPopup({currentWeapon: profile.currentWeapon})
     }
-    if (profile.weapons) {
+    // console.log("profile", profile);
+    if (profile.weapons && profile.currentWeapon?.toString()) {
+      // console.log("menuscene weapons", profile.weapons);
       this.weapons = profile.weapons
-      this.customizeComponent?.updateWeapon(this.weapons);
+      this.customizeComponent?.updateWeapon(this.weapons, profile.currentWeapon);
     };
     if (profile.characters) {
       this.characters = profile.characters
@@ -402,6 +415,7 @@ export default class MenuScene extends Scene {
     if (profile.inventory) {
       this.InventoryComponent?.updateInventory(profile.inventory);
     }
+    this.isLoading = false;
     this.render();
 
   }
