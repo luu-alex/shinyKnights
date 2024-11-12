@@ -1,9 +1,9 @@
 import EnemyManager from './EnemyManager';
 import Player from './Player';
-import SkeletonWarrior from './SkeletonWarrior';
+import SkeletonWarrior from './skeletonWarrior';
 import Ghoul from './Ghoul';
 import Banshee from './Banshee';
-import SkeletonMage from './SkeletonMage';
+import SkeletonMage from './skeletonMage';
 
 export default class EnemySpawner {
     private enemyManager: EnemyManager;

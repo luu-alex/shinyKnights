@@ -1,7 +1,7 @@
 import Enemy from './Enemy';
 import Player from './Player';
 import Sprite from '../Sprite';
-import SkeletonWarrior from './SkeletonWarrior';
+import SkeletonWarrior from './skeletonWarrior';
 import { isColliding, resolveCollision } from '../utils';
 import ItemManager from './ItemManager';
 import { SoundManager } from '../SoundManager';
