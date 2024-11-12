@@ -5,6 +5,7 @@ import Ghoul from './Ghoul';
 import Banshee from './Banshee';
 import SkeletonMage from './skeletonMage';
 
+
 export default class EnemySpawner {
     private enemyManager: EnemyManager;
     private player: Player;
