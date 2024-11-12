@@ -36,7 +36,7 @@ export class UnlockComponent {
         
         context.fillStyle = darkGreenText;
         context.font = `${this.canvasHeight*0.05}px depixel`;
-        const textWidth = context.measureText("Unlocked").width;
+        const textWidth = context.measureText("Unlocked!").width;
 
         // Calculate the x position to center the text within the box
 
@@ -45,7 +45,7 @@ export class UnlockComponent {
         const textX = boxX + (boxWidth - textWidth) / 2;
 
         // Draw the title centered horizontally
-        context.fillText("Unlocked", textX, this.canvasHeight * 0.25);
+        context.fillText("Unlocked!", textX, this.canvasHeight * 0.25);
 
         context.fillStyle = "white";
         context.font = `${this.canvasHeight*0.04}px depixel`;

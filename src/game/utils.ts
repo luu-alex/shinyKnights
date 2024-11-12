@@ -2,7 +2,7 @@ import Pet from './Pets/Pet';
 import Sprite from './Sprite';
 import Enemy from './classes/Enemy';
 import Player from './classes/Player';
-import { darkGrayBackground, grayBackground, rareBackground, uncommonBackground } from './colors';
+import { darkGrayBackground, rareBackground, uncommonBackground } from './colors';
 import Dagger from './weapon/Dagger';
 import Spear from './weapon/Spear';
 import Sword from './weapon/Sword';
@@ -49,6 +49,11 @@ export function resolveCollision(enemyA: Enemy | Player, enemyB: Enemy) {
             enemyB.x += 1;
         }
     }
+}
+
+export function preloadAudio(audio: HTMLAudioElement, callback: () => {}) {
+    audio.addEventListener('canplaythrough', callback, { once: true });
+    audio.load();  // Start loading the audio
 }
 
 export function findClosestEnemy(enemies: Enemy[], player: Player | Pet): Enemy | null {
@@ -190,7 +195,7 @@ export const getSprite = (name: string) => {
         return new Sprite('characters/swordman.png', 32, 32, 4, 100);
     } else if (name === "basicChest") {
         return new Sprite('inventoryItems/basicchest.png', 25, 15, 1, 100);
-    } else if (name === "dagger") {
+    } else if (name === "dagger" || name === "Dagger") {
         return new Sprite('weaponIcons/dagger.png', 32, 32, 4, 100);
     } else if (name ==="sword") {
         return new Sprite('weaponIcons/sword.png', 32, 32 , 1, 100);

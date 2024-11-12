@@ -6,7 +6,7 @@ import { Button } from '../../components/Button';
 import { ImageButton } from '../../components/ImageButton';
 import  { AssetManager } from '../../assets/assetManager';
 import { Settings } from '../../components/Settings';
-import { blueBackground, lightBlueButton } from '../colors';
+import { blueBackground, lightBlueButton, primaryColorBackground } from '../colors';
 import { MenuHeader } from '../../components/MenuHeader';
 import { Footer } from '../../components/Footer';
 import { CustomizationComponent } from '../../components/CustomizationComponent';
@@ -20,6 +20,8 @@ import { PurchasedGemsComponent } from '../../components/purchasedGemsComponent'
 import { InventoryComponent } from '../../components/InventoryComponent';
 import { Characters, Weapons, ItemInventory } from '../types';
 import { FailedOrderComponent } from '../../components/FailedOrderComponent';
+import { drawCenteredText, drawRoundedBox } from '../utils';
+import Sprite from '../Sprite';
 
 export default class MenuScene extends Scene {
   private canvas: HTMLCanvasElement | null;
@@ -50,6 +52,8 @@ export default class MenuScene extends Scene {
   private InventoryComponent: InventoryComponent | null = null;
   private gold: number = 0;
   private failOrderComponent: FailedOrderComponent | null = null;
+  private assets: AssetManager | null = null;
+  
 
 
 
@@ -75,6 +79,8 @@ export default class MenuScene extends Scene {
   private fetchProfile: () => {};
   private levelUpWeapon: (weaponID: number) => void;
   private createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void;
+  private logoSprite: Sprite = new Sprite('characters/MiniSkeletonMage.png', 32, 32, 4, 200);
+  private logo2Sprite: Sprite = new Sprite("characters/swordman.png", 32, 32, 4, 200);
 
   constructor(game: SceneManager, fetchProfile: () => {}, levelUpWeapon: (weaponID: number) => void, createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void) {
     super(game, 'MenuScene');
@@ -137,11 +143,11 @@ export default class MenuScene extends Scene {
     this.canvas.addEventListener('touchend', this.boundHandleTouchEnd);
 
     const assets = new AssetManager(this.onAssetsLoaded.bind(this));
+    this.assets = assets;
     assets.loadImage('daggerSprite', 'weapons/dagger.png');
     assets.loadImage('woodenarrow', 'weapons/woodenArrow.png');
     assets.loadImage('spearslash2', 'weapons/spearSlash2.png');
     assets.loadImage('spearslash3', 'weapons/spearSlash3.png');
-    assets.loadImage('whiteslash', 'weapons/whiteSlash.png');
     assets.loadImage('pause', 'pause1.png');
     assets.loadImage('fireball', 'skills/fireball.png');
     assets.loadImage('firecharge', 'skills/firecharge.png');
@@ -157,18 +163,25 @@ export default class MenuScene extends Scene {
     assets.loadImage('skeleton', 'characters/skeletonWarrior.png');
     assets.loadImage('swordman', 'characters/swordman.png');
     assets.loadImage('warden', 'characters/warden.png');
+    assets.loadAudioAssets({
+      backgroundMusic: 'sounds/strangestThing.mp3',
+      attackSFX: 'sounds/slash.mp3',
+      enemydeath1: 'sounds/enemyDeath1.mp3',
+      monsterProjectile: 'sounds/monsterProjectile.mp3',
+  });
     // Start rendering the menu
+    
     this.render();
   }
   private onAssetsLoaded() {
-    this.assetsLoaded = true; // All assets are now loaded
+    this.assetsLoaded = true; // All assets are now loade
+    if (!this.assets) return;
     console.log("All assets loaded");
     this.render(); // Re-render to update the UI
   }
   public changePage (name: string)  {
     if (name === "customize") {
-      this.customizeComponent?.updateWeaponPopup({title: this.weapons[this.currentWeapon].name, stats: this.weapons[this.currentWeapon].stats, level: this.weapons[this.currentWeapon].level, currentWeapon: this.currentWeapon});
-      this.customizeComponent?.updateGold(this.gold);
+      this.customizeComponent?.updateWeaponPopup({title: this.weapons[this.currentWeapon].name, stats: this.weapons[this.currentWeapon].stats, level: this.weapons[this.currentWeapon].level, currentWeapon: this.currentWeapon, rarity: this.weapons[this.currentWeapon].rarity});
       this.customizeComponent?.updateWeapon(this.weapons, this.currentWeapon);
       if (this.characters) {
         this.customizeComponent?.updateCharacterPopup(this.characters);
@@ -212,7 +225,6 @@ export default class MenuScene extends Scene {
 
 
   private handleClick(event: MouseEvent) {
-    console.log("clicking")
     if (!this.canvas) return;
 
     const rect = this.canvas.getBoundingClientRect();
@@ -299,7 +311,7 @@ export default class MenuScene extends Scene {
     // WebApp.showAlert('Hello World!');
     this.isRunning = false; // Stop rendering the menu scene
 
-    if(this.canvas && this.context){
+    if(this.canvas && this.context && this.assets){
       const gameScene = new GameScene(this.game, {currentWeapon: this.currentWeapon, currentCharacter: this.currentCharacter, weapons: this.weapons}, this.fetchProfile, this.levelUpWeapon, this.createMenuScene); 
       gameScene.updateUsername(this.username);
       this.game.changeScene(gameScene, this.canvas, this.context);
@@ -327,9 +339,32 @@ export default class MenuScene extends Scene {
     if (!this.assetsLoaded) {
       this.context.fillText('Loading assets...', this.canvas.width / 2 - 50, 600);
     } else {
-      if (this.mode === "menu")
-      this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username);
+      if (this.mode === "menu") {
+        this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username);
+        drawRoundedBox(this.context, 0, this.canvas.height * 0.2 / this.devicePixelRatio, this.canvas.width, this.canvas.height * 0.5 / this.devicePixelRatio, 0, primaryColorBackground, 0, false, 0, true);
+         // Dynamically size the logo
+         const targetWidth = this.canvas.width * 0.3 / this.devicePixelRatio;   // Target width as 30% of canvas width
+         const targetHeight = this.canvas.height * 0.4 / this.devicePixelRatio; // Target height as 30% of canvas height
+         
+         // Calculate a uniform scale to maintain aspect ratio
+         const logoScale = Math.min(targetWidth / this.logoSprite.frameWidth, targetHeight / this.logoSprite.frameHeight);
+         const logoX = this.canvas.width * 0.005;      // Position 2% from the left
+         const logoY = this.canvas.height * 0.17;      // Position 10% from the top
+        // Render the logo with uniform scaling
+        this.logoSprite.render(this.context, logoX, logoY, logoScale);
+        this.logo2Sprite.render(this.context, this.canvas.width * 0.225, this.canvas.height * 0.17, logoScale)
+        this.logoSprite?.update();
+        this.logo2Sprite?.update();
+
+      }
       this.playButton?.render(this.context);
+      if (this.context){
+        this.context.fillStyle = "white";
+        this.context.font = `${this.canvas.height * 0.025}px depixel`;
+        drawCenteredText(this.context, "Shiny Knights", 0.25 * this.canvas.width, 0.125 * this.canvas.height);
+
+
+      }
     }
 
 
@@ -410,7 +445,6 @@ export default class MenuScene extends Scene {
     if (profile.currentWeapon) this.currentWeapon = profile.currentWeapon;
     if (profile.gold) {
       this.gold = profile.gold;
-      this.customizeComponent?.updateGold(this.gold);
     }
     if (profile.inventory) {
       this.InventoryComponent?.updateInventory(profile.inventory);

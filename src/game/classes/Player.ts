@@ -1,8 +1,6 @@
 import Sprite from '../Sprite';
 import Weapon from '../weapon/Weapon';
 import Enemy from './Enemy';
-// import Sword from '../weapon/Sword';
-import Spear from '../weapon/Spear';
 // import Crossbow from '../weapon/Crossbow';
 // import Dagger from '../weapon/Dagger';
 import Skill from '../skills/Skill';

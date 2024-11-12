@@ -11,7 +11,7 @@ export class GameOverComponent {
     private continueButton: Button;
     public description: string = "You have been defeated by the enemy."
 
-    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', homeFN: () => void, handleExit: () => void) {
+    constructor(canvasWidth: number, canvasHeight: number, title: string = 'Settings', homeFN: () => void, _: () => void) {
         this.isVisible = false;
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
@@ -77,7 +77,6 @@ export class GameOverComponent {
         this.wave = wave;
     }
     handleClick(x: number, y: number, devicePixelRatio: number) {
-        console.log(x,y)
         this.continueButton.handleClick(x, y, devicePixelRatio);
     }
 };

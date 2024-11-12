@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const serverURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5001";
+const serverURL = import.meta.env.VITE_SERVER_URL;
 export const updateProfile = async (profile: any) => {
     try {
         console.log(" trying to update profile", profile)

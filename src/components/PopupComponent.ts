@@ -1,5 +1,5 @@
 import Sprite from "../game/Sprite";
-import { primaryColorBackground, darkGreenText, grayBackground, darkGrayBackground, lightGrayBackground, grayText, lightBlueButton } from "../game/colors";
+import { primaryColorBackground, darkGreenText, grayBackground, lightGrayBackground, lightBlueButton } from "../game/colors";
 import { Stats, WeaponStats } from "../game/types";
 import { drawRoundedBox, wrapText, levelToGold, drawCenteredText, getSprite, getBackgroundRarity } from "../game/utils";
 import { Button } from "./Button";
@@ -11,14 +11,12 @@ export class PopupComponent {
     public exitButton: ImageButton;
     private rarity:string;
     private boxBackground: string;
-    private itemBackground: string;
     private descriptionBackground: string;
     private textFont: string;
     private useButton : Button | null = null;
     private itemSprite: Sprite | null = null;
     private title: string;
     private type: string = "weapon";
-    private index: number | null = null;
     private description: string = "Common spear that is easy to use and make. Good weapon for beginners.";
     private weaponStat: WeaponStats = {
         level: 1,
@@ -44,12 +42,10 @@ export class PopupComponent {
         this.buttonTitle = buttonTitle;
         if (this.rarity === "gray" || "common") {
             this.boxBackground = grayBackground;
-            this.itemBackground = darkGrayBackground;
             this.descriptionBackground = lightGrayBackground;
             this.textFont = "black";
         } else {
             this.boxBackground = primaryColorBackground;
-            this.itemBackground = darkGreenText;
             this.descriptionBackground = darkGreenText;
             this.textFont = darkGreenText
         }
@@ -130,7 +126,7 @@ export class PopupComponent {
         this.exitButton.handleClick(x, y, this.canvasWidth, this.canvasHeight);
         this.useButton?.handleClick(x * devicePixelRatio, y * devicePixelRatio, devicePixelRatio);
     }
-    updateInfo(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, itemSprite?: Sprite, type?: string, index?: number, updateFN? : () => {}}) {
+    updateInfo(inventory : {rarity?: string, title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, itemSprite?: Sprite, type?: string, index?: number, updateFN? : () => {}}) {
         console.log("item popup component", inventory)
         if (inventory.title) {
             this.title = inventory.title;
@@ -154,14 +150,13 @@ export class PopupComponent {
         if (inventory.type) {
             this.type = inventory.type;
         }
-        if (inventory.index) {
-            this.index = inventory.index;
-        }
         if (inventory.updateFN && this.useButton) {
             this.levelUpWeapon = inventory.updateFN;
             this.useButton.onClick = inventory.updateFN;
         }
-        console.log("this index", this.index)
+        if (inventory.rarity) {
+            this.rarity = inventory.rarity;
+        }
     }
     // levelUp() {
     //     console.log("leveling up")

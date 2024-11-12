@@ -4,6 +4,7 @@ import Sprite from '../Sprite';
 import SkeletonWarrior from './SkeletonWarrior';
 import { isColliding, resolveCollision } from '../utils';
 import ItemManager from './ItemManager';
+import { SoundManager } from '../SoundManager';
 
 export default class EnemyManager {
     public enemies: Enemy[] = []; // Array to store enemies
@@ -49,12 +50,13 @@ export default class EnemyManager {
     }
 
     // Update all enemies
-    public update(deltaTime: number) {
+    public update(deltaTime: number, soundManager: SoundManager) {
         for (const enemy of this.enemies) {
             enemy.update(deltaTime, this.enemies);
             if (!enemy.isAlive && enemy.currentSprite.isLastFrame()) {
                 this.itemManager.dropItem(enemy.x, enemy.y);
                 this.removeEnemy(enemy);
+                soundManager.playSound('enemydeath1');
             }
         }
         const enemies = this.enemies;
@@ -74,6 +76,7 @@ export default class EnemyManager {
     public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         for (const enemy of this.enemies) {
             enemy.render(context, cameraX, cameraY);
+            console.log(enemy.hp);
         }
     }
 

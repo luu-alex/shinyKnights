@@ -13,11 +13,11 @@ export class ShopItemComponent {
     private currency: string;
     private cost: number;
     private bought: boolean;
-    private itemType: string;
-    private rarity: string;
-    private index: number;
+    // private itemType: string;
+    // private rarity: string;
+    // private index: number;
 
-    constructor(canvasWidth: number, canvasHeight: number, shopIcon: Sprite, title: string, currency: string, cost: number, bought: boolean, buyFunction: () => void, itemType: string, rarity: string, index: number) {
+    constructor(canvasWidth: number, canvasHeight: number, shopIcon: Sprite, title: string, currency: string, cost: number, bought: boolean, buyFunction: () => void, _: string, __: string, index: number) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.shopIcon = shopIcon;
@@ -25,9 +25,9 @@ export class ShopItemComponent {
         this.currency = currency;
         this.cost = cost;
         this.bought = bought; 
-        this.itemType = itemType;
-        this.rarity = rarity;
-        this.index = index;
+        // this.itemType = itemType;
+        // this.rarity = rarity;
+        // this.index = index;
         this.buyButton = new Button(
             this.canvasWidth * 0.1 + index * this.canvasWidth * 0.28,
             this.canvasHeight * 0.555,

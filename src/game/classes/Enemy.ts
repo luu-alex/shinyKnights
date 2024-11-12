@@ -314,6 +314,10 @@ export default class Enemy {
         // Handle freezing logic, like slowing down movement
         console.log(duration);
     }
+
+    public setHP(hp: number) {
+        this.hp = hp;
+    }
 }
 
 // Enum to manage different behaviors of the enemy

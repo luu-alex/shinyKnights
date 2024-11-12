@@ -1,5 +1,4 @@
-import Sprite from "../game/Sprite";
-import { blueBackground, darkBlueText, darkerGreenBackground, lighterGreenBackground, primaryColorBackground } from "../game/colors";
+import { blueBackground, darkBlueText, primaryColorBackground } from "../game/colors";
 import { ShopItem } from "../game/types";
 import { drawRoundedBox, getSprite } from "../game/utils";
 import { ShopItemComponent } from "./ShopItemComponent";

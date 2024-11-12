@@ -1,6 +1,6 @@
 import { unlockChest } from "../apiCalls/serverCalls";
 import Sprite from "../game/Sprite";
-import { darkBlueText, grayText, lightBrownBackground, primaryBrownBackground } from "../game/colors";
+import { darkBlueText, lightBrownBackground, primaryBrownBackground } from "../game/colors";
 import { ItemInventory } from "../game/types";
 import { drawRoundedBox, getDescription, getSprite, getTitle } from "../game/utils";
 import { BoxComponent } from "./BoxComponent";

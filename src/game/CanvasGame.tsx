@@ -5,9 +5,8 @@ import WebApp from '@twa-dev/sdk';
 import { useTonConnectUI, THEME } from '@tonconnect/ui-react';
 import { SceneManager } from './scenes/SceneManager';
 import { lighterGreenBackground } from './colors';
-import { getDailyShop, updateProfile, upgradeWeapon } from '../apiCalls/serverCalls';
-import GameScene from './scenes/GameScene';
-const serverURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5001";
+import { upgradeWeapon } from '../apiCalls/serverCalls';
+const serverURL = import.meta.env.VITE_SERVER_URL;
 // console.log("server url ", serverURL);
 // const localURL = "http://localhost:5001"
 
@@ -62,21 +61,6 @@ const CanvasGame: React.FC = () => {
 		console.log("setting menu scene")
 		console.log("menusceneref",menuSceneRef.current)
 	}
-
-	// const createGameScene = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => {
-	// 	const gameScene = new GameScene(sceneManagerRef.current, fetchOrCreateProfile, levelUpWeapon, createMenuScene);
-	// 	sceneManagerRef.current.changeScene(gameScene, canvas, context); // Correctly set the current scene
-	// 	setCurrentScene(gameScene.sceneName);
-	// 	console.log("setting game scene");
-	// };
-
-	const removeAllEventListeners = () => {
-		const canvas = canvasRef.current;
-		if (!canvas) return;
-
-		canvas.replaceWith(canvas.cloneNode(true)); // This effectively removes all listeners
-		canvasRef.current = canvas; // Re-assign the reference after cloning
-	};
 
 // Call this function in CanvasGame before switching scenes:
 
@@ -267,7 +251,6 @@ const CanvasGame: React.FC = () => {
 	return (
 		<div>
 			{/* If the profile is still loading, display loading message */}
-			{!profile ? <div>Loading profile...</div> : null}
 			<canvas ref={canvasRef} />
 		</div>
 	);

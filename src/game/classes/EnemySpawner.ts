@@ -4,7 +4,6 @@ import SkeletonWarrior from './SkeletonWarrior';
 import Ghoul from './Ghoul';
 import Banshee from './Banshee';
 import SkeletonMage from './SkeletonMage';
-import Enemy from './Enemy';
 
 export default class EnemySpawner {
     private enemyManager: EnemyManager;
@@ -14,6 +13,7 @@ export default class EnemySpawner {
     private maxEnemies: number;
     private difficultyIncreaseRate: number;
     private enemyTypes: any[];
+    private wave: number = 1;
 
     constructor(enemyManager: EnemyManager, player: Player, initialSpawnInterval: number, maxEnemies: number, difficultyIncreaseRate: number) {
         this.enemyManager = enemyManager;
@@ -49,10 +49,12 @@ export default class EnemySpawner {
         const EnemyClass = this.enemyTypes[randomTypeIndex];
 
         // Random spawn position around the map
-        const spawnX = Math.random() * 3000;  // Example: within 800px width
-        const spawnY = Math.random() * 2000;  // Example: within 600px height
+        const spawnX = Math.random() * 1500;  // Example: within 800px width
+        const spawnY = Math.random() * 1000;  // Example: within 600px height
 
         const newEnemy = new EnemyClass(spawnX, spawnY, this.player);
+        newEnemy.setHP(newEnemy.hp + this.wave * 5);
+
         this.enemyManager.addEnemy(newEnemy);
     }
     public pushSkeletonMage() {
@@ -60,5 +62,8 @@ export default class EnemySpawner {
     }
     public pushBanshee() {
         this.enemyTypes.push(Banshee)
+    }
+    public updateWave(wave: number) {
+        this.wave = wave;
     }
 }

@@ -1,6 +1,6 @@
 import { equipWeaponAPI, upgradeCharacter } from "../apiCalls/serverCalls";
 import Sprite from "../game/Sprite";
-import { customizeBackground, darkBlueText, darkBrownBackground, primaryBrownBackground, lightBrownBackground, grayBackground, primaryColorBackground, darkGreenText, redText, rareBackground } from "../game/colors";
+import { customizeBackground, darkBlueText, darkBrownBackground, primaryBrownBackground, lightBrownBackground, darkGreenText, redText } from "../game/colors";
 import { Characters, Stats, Weapons } from "../game/types";
 import { drawCenteredText, drawRoundedBox, getBackgroundRarity, getDescription, getSprite } from "../game/utils";
 import { BoxComponent } from "./BoxComponent";
@@ -41,7 +41,6 @@ export class CustomizationComponent {
     private characterPopupComponent: CharacterPopupComponent | null = null;
     private popupVisible: boolean = false;
     private weaponPopupVisible: boolean = false;
-    private gold: number = 0;
     private upgradeWeapon: (weaponNumber: number) => void;
     private weapons: Weapons | null = null;
     public currentWeapon: number = 0;
@@ -225,8 +224,8 @@ export class CustomizationComponent {
         this.wardenSprite.render(context, this.canvasWidth * 0.25, this.canvasHeight * 0.2, 5 * scaleFactor);
 
         // draw equipment square
-        const color = this.weapons[this.currentWeapon].rarity === "rare" ? rareBackground : grayBackground
-        this.chooseWeaponBox?.render(context, this.canvasWidth * 0.09, this.canvasHeight * 0.35, squareSize, squareSize, 5, color, 3, true, 5);
+        const backgroundColor = getBackgroundRarity(this.weapons[this.currentWeapon].rarity);
+        this.chooseWeaponBox?.render(context, this.canvasWidth * 0.09, this.canvasHeight * 0.35, squareSize, squareSize, 5, backgroundColor, 3, true, 5);
         // draw weapon in equipment square
         this.weaponSprite.render(context, this.canvasWidth * 0.11, this.canvasHeight * 0.36, 1.5 * scaleFactor);
         context.fillStyle = "white";
@@ -358,7 +357,7 @@ export class CustomizationComponent {
         this.characterPopupVisible = false;
     }
 
-    updateWeaponPopup(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, gold?: number}) {
+    updateWeaponPopup(inventory : {title?: string, description?: string, stats?: Stats, level?: number, currentWeapon?: number, gold?: number, rarity?: string}) {
         // console.log("update weapon popup", inventory.currentWeapon)
         this.itemPopupComponent?.updateInfo(inventory);
         if (inventory.currentWeapon && this.weapons) {
@@ -403,9 +402,6 @@ export class CustomizationComponent {
             this.characterPopupComponent.level = character[this.currentCharacter as keyof Characters].level;
         }
     };
-    updateGold(gold: number) {
-        this.gold = gold;
-    }
     updateUsername(username: string) {
         this.username = username;
     }

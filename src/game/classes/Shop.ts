@@ -17,20 +17,20 @@ export class Shop {
     private player: Player;
     private itemsToBuy: { name: string, cost: number, description: string, sprite: Sprite, bought: boolean, scale?: number, translate?: { x: number, y: number} }[] = [];
     private items: { name: string, cost: number, description: string, sprite: Sprite, bought: boolean, unique: boolean, scale?: number, translate?: { x: number, y: number} }[] = [
-        { name: "Worn out Shoes", cost: 1, description: "+3 speed", sprite: new Sprite('shopIcons/wornShoes.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Worn out Shoes", cost: 3, description: "+3 speed", sprite: new Sprite('shopIcons/wornShoes.png', 16, 16, 1, 100), bought: false, unique: true },
         { name: "Tooth Necklace", cost: 2, description: "+5 Pet Damage", sprite: new Sprite('shopIcons/toothNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Topaz", cost: 3, description: "+1 monster drop rate.", sprite: new Sprite('shopIcons/topaz.png', 16, 16, 1, 100), bought: false, unique: false},
-        { name: "Arthurs Sword?", cost: 2, description: "Skill: Summon Arthurs sword. Scales with Strength ", sprite: new Sprite('shopIcons/arthurSword.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Arthurs Sword", cost: 10, description: "Skill: Summon Arthurs sword. Scales with Strength ", sprite: new Sprite('shopIcons/arthurSword.png', 16, 16, 1, 100), bought: false, unique: true },
         { name: "Buckler", cost: 1, description: "+10 HP", sprite: new Sprite('shopIcons/buckler.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Blue Necklace", cost: 0, description: "+2 Magic damage", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Lightning", cost: 0, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('shopIcons/lightningScroll.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Holy Circle", cost: 0, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Witches Apple", cost: 13, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/apple.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "War Helmet", cost: 0, description: "+3 Strength. +10 HP", sprite: new Sprite('shopIcons/warHelmet.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Fireball", cost: 0, description: "A skill", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
-        { name: "Bear", cost: 0, description: "A pet bear will fight for you!", sprite: new Sprite('pets/MiniBear.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.5, translate: { x: 0, y: -26 } },
-        { name: "Bunny", cost: 0, description: "A bunny will help dig and find items for you!", sprite: new Sprite('pets/MiniBunny.png', 32, 32, 1, 100), bought: false, unique: true, scale: 2, translate: { x: 0, y: -32 } },
-        { name: "Boar", cost: 0, description: "A boar that will charge at enemies and attack.", sprite: new Sprite('pets/MiniBoar.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.7, translate: { x: 0, y: -32 } },
+        { name: "Blue Necklace", cost: 1, description: "+2 Magic damage, will be added next update :)", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Lightning", cost: 3, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('shopIcons/lightningScroll.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Holy Circle", cost: 10, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Witches Apple", cost: 2, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/apple.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "War Helmet", cost: 3, description: "+3 Strength. +10 HP", sprite: new Sprite('shopIcons/warHelmet.png', 16, 16, 1, 100), bought: false, unique: false },
+        { name: "Fireball", cost: 3, description: "A skill", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
+        { name: "Bear", cost: 3, description: "A pet bear will fight for you!", sprite: new Sprite('pets/MiniBear.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.5, translate: { x: 0, y: -26 } },
+        { name: "Bunny", cost: 3, description: "A bunny will help dig and find items for you!", sprite: new Sprite('pets/MiniBunny.png', 32, 32, 1, 100), bought: false, unique: true, scale: 2, translate: { x: 0, y: -32 } },
+        { name: "Boar", cost: 2, description: "A boar that will charge at enemies and attack.", sprite: new Sprite('pets/MiniBoar.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.7, translate: { x: 0, y: -32 } },
         
     ];
     public isVisible: boolean = false;
@@ -89,8 +89,8 @@ export class Shop {
             adjustedHeight * 0.26,
             adjustedWidth * 0.27,
             adjustedHeight * 0.05,
-            "Re-roll",
-            () => { this.randomizeItems()},
+            "Re-roll: 1",
+            () => { this.rerollItems()},
             darkGreenText,
             adjustedHeight * 0.02
         );
@@ -359,7 +359,7 @@ export class Shop {
                 const lightning = new LightningSkill(this.player);
                 this.player.learnSkill(lightning);
                 break;
-            case 'Arthurs Sword?':
+            case 'Arthurs Sword':
                 const arthurs = new ArthurSwordSkill(this.player);
                 this.player.learnSkill(arthurs);
                 break;
@@ -395,6 +395,13 @@ export class Shop {
         this.itemsToBuy = newShuffledItems.slice(0, 3); // Select 3 random items, you can adjust this number
 
         this.updateBuyButtons(); // Reinitialize the buy buttons based on the new items
+    }
+    private rerollItems() {
+        if (this.player.gold === 0) {
+            return;
+        }
+        this.player.gold -=1;
+        this.randomizeItems();
     }
     private updateBuyButtons() {
         if (!this.canvas) return;

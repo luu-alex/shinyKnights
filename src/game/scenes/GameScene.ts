@@ -1,7 +1,6 @@
 import { Scene } from './Scene';
 import { Joystick } from '../Joystick';
 import { ImageButton } from '../../components/ImageButton';
-import MenuScene from './MenuScene';
 import Sprite from '../Sprite';
 import Player from '../classes/Player';
 import Camera from '../classes/Camera';
@@ -16,6 +15,7 @@ import { Shop } from '../classes/Shop';
 import { Settings } from '../../components/Settings';
 import { GameOverComponent } from '../../components/GameOverComponent';
 import { gameResults } from '../../apiCalls/serverCalls';
+import { SoundManager } from '../SoundManager';
 
 export default class GameScene extends Scene {
 	private canvas: HTMLCanvasElement | null;
@@ -37,10 +37,10 @@ export default class GameScene extends Scene {
 	private flower3: Sprite;
 	private flower4: Sprite;
 	private wood: Sprite;
-	private mapWidth = 3000;
-	private mapHeight = 2000;
+	private mapWidth = 1500;
+	private mapHeight = 1000;
 	private rock: Sprite;
-	private roundTime: number = 60;
+	private roundTime: number = 45;
 	private roundTimer: number = 2;
 	private currentRound: number = 1;
 	private shop: Shop;
@@ -53,12 +53,12 @@ export default class GameScene extends Scene {
     private boundHandleInteractionMove: (event: MouseEvent | TouchEvent) => void;
     private boundHandleInteractionEnd: (event: MouseEvent | TouchEvent) => void;
 	private username: string = ""
-
+	private isLoading: boolean = false;
+	private soundManager: SoundManager; 
 
 	private fetchProfile: () => {};
-	private levelUpWeapon: (weaponID: number) => void;
 	private createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void;
-	constructor(game: any, profile: any, fetchProfile: () => {}, levelUpWeapon : (weaponId: number) => void, createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void) {
+	constructor(game: any, profile: any, fetchProfile: () => {}, _ : (weaponId: number) => void, createMenuScene: (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) => void) {
 		super(game, 'gameScene');
 		this.canvas = null;
 		this.context = null;
@@ -68,8 +68,15 @@ export default class GameScene extends Scene {
 		this.joystick = null; // Initialize joystick as null
 		this.pauseButton = null;
 		this.fetchProfile = fetchProfile;
-		this.levelUpWeapon = levelUpWeapon;
 		this.createMenuScene = createMenuScene;
+		this.soundManager = new SoundManager();
+		this.soundManager.loadSound('attackSFX', 'sounds/slash.mp3');
+		this.soundManager.loadSound('enemydeath1', 'sounds/enemyDeath1.mp3');
+		this.soundManager.loadSound('backgroundMusic', 'sounds/strangestThing.mp3');
+		this.soundManager.loadSound('monsterProjectile', 'sounds/monsterProjectile.mp3');
+		this.soundManager.playSound('backgroundMusic', {loop: true, volume: 0.3})
+
+		
 
         const playerIdleSprite = new Sprite('characters/warden.png', 32, 32, 4, 100);
         const playerWalkSprite = new Sprite('characters/warden.png', 32, 32, 6, 100, 1);
@@ -82,7 +89,7 @@ export default class GameScene extends Scene {
 		this.itemManager = new ItemManager(this.player);
 		this.enemyManager = new EnemyManager(this.player, this.itemManager);
 		this.petManager = new PetManager();
-		this.enemySpawner = new EnemySpawner(this.enemyManager, this.player, 1, 40, 0.3);
+		this.enemySpawner = new EnemySpawner(this.enemyManager, this.player, 7, 15, 0.3);
 
 		this.shop = new Shop(this.player, this.startNewRound.bind(this), this.petManager, this.itemManager);
 
@@ -137,6 +144,8 @@ export default class GameScene extends Scene {
 	}
 
 	private async exitAndSubmit() {
+		if (this.isLoading) return;
+		this.isLoading = true;
 		await gameResults(this.username, this.currentRound);
 		this.exitGame();
 	}
@@ -151,9 +160,10 @@ export default class GameScene extends Scene {
 	}
 	private async endRound() {
 		// Reset player stats
-		this.player.hp = 1; // Full health
+		this.player.hp = this.player.maxHP; // Full health
 		this.player.x = this.mapWidth / 2; // Spawn at center of the map
 		this.player.y = this.mapHeight / 2;
+		this.enemySpawner.updateWave(this.currentRound);
 		if (this.currentRound === 3) {
 			this.enemySpawner.pushSkeletonMage();
 		}
@@ -197,8 +207,8 @@ export default class GameScene extends Scene {
 			this.gameOverComponent?.updateWave(this.currentRound);
 			return;
 		}
-        this.player.update(delta, 3000, 2000);
-		this.enemyManager.update(delta);
+        this.player.update(delta, 1500, 1000);
+		this.enemyManager.update(delta, this.soundManager);
 		this.itemManager.update();
 		this.HUD.update();
 		this.enemySpawner.update(delta);
@@ -238,6 +248,7 @@ export default class GameScene extends Scene {
 			if (enemyA.name === "SkeletonMage") {
 				const attacks = enemyA.attack(delta);
 				if (attacks) {
+					this.soundManager.playSound('monsterProjectile', {volume: 0.5})
 					for (const attack of attacks) {
 						this.projectileManager.addEnemyProjectile(attack);
 					}
@@ -257,6 +268,7 @@ export default class GameScene extends Scene {
 	public handlePlayerAttack() {
         const projectile = this.player.attack(this.enemyManager.enemies); // Player attack returns a new projectile
         if (projectile) {
+			this.soundManager.playSound('attackSFX', {volume: 0.3});
             this.projectileManager.addProjectile(projectile); // Add the projectile to the manager
         }
     }
@@ -275,6 +287,7 @@ export default class GameScene extends Scene {
 	private handleInteractionStart(event: MouseEvent | TouchEvent) {
 		event.preventDefault(); // Prevents scrolling/zooming on touch devices
 		if (!this.canvas || !this.joystick) return;
+		if (this.isDead || this.isVictory) return;
 		console.log("handling stuff")
 		
 

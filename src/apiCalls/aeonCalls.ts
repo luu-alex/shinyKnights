@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const serverURL = import.meta.env.VITE_SERVER_URL || "http://localhost:5001";
+const serverURL = import.meta.env.VITE_SERVER_URL;
 export const createOrder = async (username: string, amount: number) => {
     try {
         const response = await axios.post(serverURL + '/api/aeonOrder', { userID: username, amount });

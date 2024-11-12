@@ -1,10 +1,9 @@
 import Sprite from "../game/Sprite";
-import { primaryColorBackground, darkGreenText, grayBackground, darkGrayBackground, lightGrayBackground, grayText, lightBlueButton } from "../game/colors";
+import { primaryColorBackground, darkGreenText, grayBackground, darkGrayBackground, lightGrayBackground, lightBlueButton } from "../game/colors";
 import { PlayerStats } from "../game/types";
 import { drawRoundedBox, wrapText } from "../game/utils";
 import { Button } from "./Button";
 import { ImageButton } from "./ImageButton";
-import { upgradeCharacter } from "../apiCalls/serverCalls";
 export class CharacterPopupComponent {
     public isVisible: boolean;
     private canvasWidth: number;

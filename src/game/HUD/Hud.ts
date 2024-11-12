@@ -25,7 +25,7 @@ export default class HUD {
 
         // Draw an HP bar
         const maxHpBarWidth = canvasWidth * 0.96;
-        const hpBarWidth = (this.player.hp / 100) * maxHpBarWidth;
+        const hpBarWidth = (this.player.hp / this.player.maxHP) * maxHpBarWidth;
 
         context.fillStyle = lightBlack;
         context.fillRect(canvasWidth * 0.02, canvasHeight * 0.01, maxHpBarWidth, canvasHeight * 0.035);
