@@ -3,7 +3,7 @@ import Player from './Player';
 import SkeletonWarrior from './skeletonWarrior';
 import Ghoul from './Ghoul';
 import Banshee from './Banshee';
-import SkeletonMage from './skeletonmage';
+// import SkeletonMage from './skeletonmage';
 
 
 export default class EnemySpawner {
@@ -58,9 +58,9 @@ export default class EnemySpawner {
 
         this.enemyManager.addEnemy(newEnemy);
     }
-    public pushSkeletonMage() {
-        this.enemyTypes.push(SkeletonMage);
-    }
+    // public pushSkeletonMage() {
+    //     this.enemyTypes.push(SkeletonMage);
+    // }
     public pushBanshee() {
         this.enemyTypes.push(Banshee)
     }
