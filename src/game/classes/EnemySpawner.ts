@@ -3,7 +3,7 @@ import Player from './Player';
 import SkeletonWarrior from './skeletonWarrior';
 import Ghoul from './Ghoul';
 import Banshee from './Banshee';
-import SkeletonMage from './skeletonMage';
+import SkeletonMage from './skeletonmage';
 
 
 export default class EnemySpawner {
