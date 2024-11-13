@@ -361,7 +361,7 @@ export default class MenuScene extends Scene {
       if (this.context){
         this.context.fillStyle = "white";
         this.context.font = `${this.canvas.height * 0.025}px depixel`;
-        drawCenteredText(this.context, "Shiny Knights", 0.5 * this.canvas.width / this.devicePixelRatio, 0.25 * this.canvas.height / this.devicePixelRatio);
+        drawCenteredText(this.context, "Shiny Knights", 0.5 * this.canvas.width / this.devicePixelRatio, 0.275 * this.canvas.height / this.devicePixelRatio);
 
 
       }

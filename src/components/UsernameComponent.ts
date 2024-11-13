@@ -9,7 +9,7 @@ export class UsernameComponent {
         drawRoundedBox(context, canvasWidth * 0.02 / devicePixelRatio, canvasHeight * 0.12 / devicePixelRatio, boxWidth, boxHeight, 1, lightGold, 2);
         // Set the font and style for the username text and center it
         // Set the initial font size
-        let fontSize = canvasHeight * 0.02;
+        let fontSize = canvasHeight * 0.015;
         context.font = `${fontSize}px depixel`;
 
         // Measure the width of the username text
