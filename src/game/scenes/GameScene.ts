@@ -165,7 +165,7 @@ export default class GameScene extends Scene {
 		this.player.y = this.mapHeight / 2;
 		this.enemySpawner.updateWave(this.currentRound);
 		if (this.currentRound === 3) {
-			this.enemySpawner.pushSkeletonMage();
+			// this.enemySpawner.pushSkeletonMage();
 		}
 		if (this.currentRound === 4) {
 			this.enemySpawner.pushBanshee();
