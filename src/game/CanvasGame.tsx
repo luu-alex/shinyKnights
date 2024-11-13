@@ -100,7 +100,7 @@ const CanvasGame: React.FC = () => {
 	useEffect(() => {
 		const fetchData = async () => {
             initdataRef.current = WebApp.initDataUnsafe.user?.username;
-            userNameRef.current = initdataRef.current ? initdataRef.current : 'user1';
+            userNameRef.current = initdataRef.current ? initdataRef.current : 'user3';
 
             // Fetch or create profile
             await fetchOrCreateProfile();

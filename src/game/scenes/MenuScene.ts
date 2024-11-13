@@ -340,8 +340,8 @@ export default class MenuScene extends Scene {
       this.context.fillText('Loading assets...', this.canvas.width / 2 - 50, 600);
     } else {
       if (this.mode === "menu") {
-        this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username);
-        drawRoundedBox(this.context, 0, this.canvas.height * 0.2 / this.devicePixelRatio, this.canvas.width, this.canvas.height * 0.5 / this.devicePixelRatio, 0, primaryColorBackground, 0, false, 0, true);
+        this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username, this.devicePixelRatio);
+        drawRoundedBox(this.context, 0, this.canvas.height * 0.2 / this.devicePixelRatio, this.canvas.width, this.canvas.height * 0.5 / this.devicePixelRatio, 0, primaryColorBackground, 0, true, 0, false);
          // Dynamically size the logo
          const targetWidth = this.canvas.width * 0.3 / this.devicePixelRatio;   // Target width as 30% of canvas width
          const targetHeight = this.canvas.height * 0.4 / this.devicePixelRatio; // Target height as 30% of canvas height
@@ -361,7 +361,7 @@ export default class MenuScene extends Scene {
       if (this.context){
         this.context.fillStyle = "white";
         this.context.font = `${this.canvas.height * 0.025}px depixel`;
-        drawCenteredText(this.context, "Shiny Knights", 0.25 * this.canvas.width, 0.125 * this.canvas.height);
+        drawCenteredText(this.context, "Shiny Knights", 0.5 * this.canvas.width / this.devicePixelRatio, 0.25 * this.canvas.height / this.devicePixelRatio);
 
 
       }

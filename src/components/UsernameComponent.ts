@@ -3,10 +3,10 @@ import { drawRoundedBox } from "../game/utils";
 
 export class UsernameComponent {
 
-    public render(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, username: string) {
+    public render(context: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, username: string, devicePixelRatio: number) {
         const boxWidth = canvasWidth * 0.2;
         const boxHeight = canvasHeight * 0.03;
-        drawRoundedBox(context, canvasWidth * 0.01, canvasHeight * 0.06, boxWidth, boxHeight, 1, lightGold, 2);
+        drawRoundedBox(context, canvasWidth * 0.02 / devicePixelRatio, canvasHeight * 0.12 / devicePixelRatio, boxWidth, boxHeight, 1, lightGold, 2);
         // Set the font and style for the username text and center it
         // Set the initial font size
         let fontSize = canvasHeight * 0.02;
@@ -29,7 +29,7 @@ export class UsernameComponent {
         const textX = (boxWidth - textWidth) / 2 + canvasWidth * 0.01;
 
         // Draw the text inside the box
-        context.fillText(username, textX, canvasHeight * 0.08);
+        context.fillText(username, textX, canvasHeight * 0.16 / devicePixelRatio);
 
 
     }
