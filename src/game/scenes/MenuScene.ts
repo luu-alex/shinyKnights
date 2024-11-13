@@ -310,7 +310,7 @@ export default class MenuScene extends Scene {
     const response = await createOrder(this.username, amount)
     console.log("handlebuying gems response", response)
     if (response && this.orderComponent) {
-      this.orderComponent.callBackURL = response.model.webUrl || response.merchantURL;
+      this.orderComponent.callBackURL = "https://sbx-crypto-payment.alchemypay.org/payToken?orderNum=" + (response.model.webUrl || response.merchantURL);
     }
     this.isLoading = false;
     this.page = "pendingOrders"
