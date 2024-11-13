@@ -76,7 +76,6 @@ export default class EnemyManager {
     public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         for (const enemy of this.enemies) {
             enemy.render(context, cameraX, cameraY);
-            console.log(enemy.hp);
         }
     }
 

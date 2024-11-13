@@ -6,7 +6,7 @@ import { Button } from '../../components/Button';
 import { ImageButton } from '../../components/ImageButton';
 import  { AssetManager } from '../../assets/assetManager';
 import { Settings } from '../../components/Settings';
-import { blueBackground, lightBlueButton, primaryColorBackground } from '../colors';
+import { blueBackground, lightBlueButton, lighterGreenBackground } from '../colors';
 import { MenuHeader } from '../../components/MenuHeader';
 import { Footer } from '../../components/Footer';
 import { CustomizationComponent } from '../../components/CustomizationComponent';
@@ -369,7 +369,7 @@ export default class MenuScene extends Scene {
     } else {
       if (this.mode === "menu") {
         this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username, this.devicePixelRatio);
-        drawRoundedBox(this.context, 0, this.canvas.height * 0.2 / this.devicePixelRatio, this.canvas.width, this.canvas.height * 0.5 / this.devicePixelRatio, 0, primaryColorBackground, 0, true, 0, false);
+        drawRoundedBox(this.context, 0, this.canvas.height * 0.2 / this.devicePixelRatio, this.canvas.width, this.canvas.height * 0.5 / this.devicePixelRatio, 0, lighterGreenBackground, 0, true, 0, false);
          // Dynamically size the logo
          const targetWidth = this.canvas.width * 0.3 / this.devicePixelRatio;   // Target width as 30% of canvas width
          const targetHeight = this.canvas.height * 0.4 / this.devicePixelRatio; // Target height as 30% of canvas height

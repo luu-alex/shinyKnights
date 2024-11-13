@@ -7,7 +7,7 @@ export default class Ghoul extends Enemy {
         const walkSprite = new Sprite('characters/MiniGhoul.png', 32, 32, 6, 100, 1);
         const attackSprite = new Sprite('characters/MiniGhoul.png', 32, 32, 5, 100, 3);
         const deathSprite = new Sprite('characters/MiniGhoul.png', 32, 32, 4, 100, 7);
-        super(idleSprite, walkSprite, attackSprite, deathSprite, x, y, 50, 125, player, 50, [], scale);
+        super(idleSprite, walkSprite, attackSprite, deathSprite, x, y, 50, 125, player, 30, [], scale);
     }
 
     // Goblins may have a special attack

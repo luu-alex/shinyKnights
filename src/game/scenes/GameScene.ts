@@ -354,7 +354,6 @@ export default class GameScene extends Scene {
 	}
 
 	render() {
-		console.log("rendering")
 		if (!this.isRunning || !this.context || !this.canvas) return;
         this.context.imageSmoothingEnabled = false;
 
@@ -374,8 +373,7 @@ export default class GameScene extends Scene {
 		if (this.joystick) {
 			this.joystick.render(this.context, this.devicePixelRatio);
 		}
-		if (this.pauseButton)
-		this.pauseButton.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
+		
         this.player.render(this.context, this.camera.x, this.camera.y);
 		this.enemyManager.render(this.context, this.camera.x, this.camera.y);
 		this.projectileManager.render(this.context, this.camera.x, this.camera.y);
@@ -389,8 +387,13 @@ export default class GameScene extends Scene {
 		// this.lightning.render(this.context, 100, 100, this.devicePixelRatio);
 		if (this.shop.isVisible && !this.isVictory)
 		this.shop.render(this.context);
-		if (this.settings?.isVisible)
-		this.settings.render(this.context);
+		if (this.settings?.isVisible) {
+			this.context.font = `${this.camera.canvasHeight * 0.03}px depixel`;
+			this.settings.render(this.context);
+
+		}
+		if (this.pauseButton)
+		this.pauseButton.render(this.context, this.canvas.width / this.devicePixelRatio, this.canvas.height / this.devicePixelRatio);
 		if (this.isDead || this.isVictory) {
 			this.gameOverComponent?.render(this.context);
 		}

@@ -24,7 +24,7 @@ export class Shop {
         { name: "Buckler", cost: 1, description: "+10 HP", sprite: new Sprite('shopIcons/buckler.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Blue Necklace", cost: 1, description: "+2 Magic damage, will be added next update :)", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Lightning", cost: 3, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('shopIcons/lightningScroll.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Holy Circle", cost: 10, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Holy Circle", cost: 0, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
         { name: "Witches Apple", cost: 2, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/apple.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "War Helmet", cost: 3, description: "+3 Strength. +10 HP", sprite: new Sprite('shopIcons/warHelmet.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Fireball", cost: 3, description: "A skill", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
@@ -346,7 +346,8 @@ export class Shop {
                 break;
             case 'War Helmet':
                 this.player.strength += 3;
-                this.player.hp += 10; // Increase player HP
+                this.player.currentWeapon.damage += 3;
+                this.player.maxHP += 10; // Increase player HP
                 break;
             case 'Speed Boost':
                 this.player.speed += 10; // Increase player speed

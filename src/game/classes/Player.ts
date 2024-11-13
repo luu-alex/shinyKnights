@@ -23,7 +23,7 @@ export default class Player {
     private state: PlayerState;
     private joystickInput: { x: number, y: number };
     private isFacingRight: boolean;
-    private currentWeapon: Weapon;
+    public currentWeapon: Weapon;
     public width: number;
     public height: number;
     public level: number = 1;

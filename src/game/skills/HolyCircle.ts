@@ -14,7 +14,7 @@ export class HolyCircle extends Skill {
     private hitEnemies: Set<Enemy>;
 
     constructor(player: Player) {
-        super("holyCircle", 50, 5000, new Sprite('skills/holyCircle.png', 121, 121, 17, 240), player); // 50 damage, 5 second cooldown
+        super("holyCircle", 25, 5000, new Sprite('skills/holyCircle.png', 121, 121, 17, 240), player); // 50 damage, 5 second cooldown
         this.x = 0;
         this.y = 0;
         this.radius = 50; // Radius of the circle
@@ -86,7 +86,7 @@ export class HolyCircle extends Skill {
             // context.fill();
 
             // Optionally, render the sprite for more visual effect
-            this.sprite.render(context, this.x - this.sprite.frameWidth / 2 - cameraX, this.y - cameraY - this.sprite.frameHeight / 2);
+            this.sprite.render(context, (this.x - this.sprite.frameWidth / 2) - cameraX, this.y - cameraY - this.sprite.frameHeight / 2);
         }
     }
 }

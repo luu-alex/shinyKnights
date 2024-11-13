@@ -1,5 +1,5 @@
-import { primaryColorBackground, darkGreenText } from "../game/colors";
-import { drawRoundedBox } from "../game/utils";
+import { primaryColorBackground, darkGreenText, lighterGreenBackground } from "../game/colors";
+import { drawCenteredText, drawRoundedBox } from "../game/utils";
 import { ImageButton } from "./ImageButton";
 export class Settings {
     public isVisible: boolean;
@@ -14,16 +14,27 @@ export class Settings {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.title = title;
-        this.exitButton = new ImageButton(0.8, 0.21, 0.1, 0.06, 'ui/closeIcon.png', this.hide.bind(this));
+        this.exitButton = new ImageButton(0.8, 0.15, 0.1, 0.06, 'ui/closeIcon.png', this.hide.bind(this));
         this.handleExit = handleExit;
         
-        this.homeButton = new ImageButton(0.425, 0.7, 0.1, 0.06, 'ui/homeIcon.png', homeFN.bind(this));
+        this.homeButton = new ImageButton(0.425, 0.6, 0.1, 0.06, 'ui/homeIcon.png', homeFN.bind(this));
     }
     render(context: CanvasRenderingContext2D) {
         // Draw the settings box
-        drawRoundedBox(context, this.canvasWidth * 0.1, this.canvasHeight * 0.2, this.canvasWidth * 0.8, this.canvasHeight * 0.6, 5, primaryColorBackground);
+        drawRoundedBox(context, this.canvasWidth * 0.1, this.canvasHeight * 0.15, this.canvasWidth * 0.8, this.canvasHeight * 0.6, 5, primaryColorBackground);
+        drawRoundedBox(context, this.canvasWidth * 0.2, this.canvasHeight * 0.3, this.canvasWidth * 0.6, this.canvasHeight * 0.2, 5, lighterGreenBackground);
+        drawRoundedBox(context, this.canvasWidth * 0.2, this.canvasHeight * 0.3, this.canvasWidth * 0.6, this.canvasHeight * 0.1, 5, lighterGreenBackground);
+        context.fillStyle = "white";
+        drawCenteredText(context, "Sound", this.canvasWidth * 0.35, this.canvasHeight * 0.365);
+        drawCenteredText(context, "Music", this.canvasWidth * 0.35, this.canvasHeight * 0.46);
+        
+        this.drawToggleCircle(context, this.canvasWidth * 0.72, this.canvasHeight * 0.35, true);
+        this.drawToggleCircle(context, this.canvasWidth * 0.72, this.canvasHeight * 0.45, true);
+
+        
         // Draw exit button
         this.exitButton.render(context, this.canvasWidth, this.canvasHeight);
+        if (this.title === "Paused") 
         this.homeButton.render(context, this.canvasWidth, this.canvasHeight);
         
         context.fillStyle = darkGreenText;
@@ -41,6 +52,16 @@ export class Settings {
     }
     public show() {
         this.isVisible = true;
+    }
+    private drawToggleCircle(context: CanvasRenderingContext2D, x: number, y: number, isOn: boolean) {
+        const radius = this.canvasHeight * 0.02;
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fillStyle = isOn ? primaryColorBackground : "transparent"; // Filled for "On" state
+        context.fill();
+        context.strokeStyle = "white";
+        context.lineWidth = 2;
+        context.stroke();
     }
 
     // Hide the shop
