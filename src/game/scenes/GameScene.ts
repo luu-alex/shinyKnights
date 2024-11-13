@@ -41,7 +41,7 @@ export default class GameScene extends Scene {
 	private mapHeight = 1000;
 	private rock: Sprite;
 	private roundTime: number = 45;
-	private roundTimer: number = 2;
+	private roundTimer: number = 45;
 	private currentRound: number = 1;
 	private shop: Shop;
 	private roundEnd: boolean = false;
@@ -165,7 +165,7 @@ export default class GameScene extends Scene {
 		this.player.y = this.mapHeight / 2;
 		this.enemySpawner.updateWave(this.currentRound);
 		if (this.currentRound === 3) {
-			// this.enemySpawner.pushSkeletonMage();
+			this.enemySpawner.pushSkeletonMage();
 		}
 		if (this.currentRound === 4) {
 			this.enemySpawner.pushBanshee();

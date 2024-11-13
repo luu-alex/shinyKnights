@@ -380,7 +380,7 @@ export default class MenuScene extends Scene {
          const logoY = this.canvas.height * 0.17;      // Position 10% from the top
         // Render the logo with uniform scaling
         this.logoSprite.render(this.context, logoX, logoY, logoScale);
-        this.logo2Sprite.render(this.context, this.canvas.width * 0.225, this.canvas.height * 0.17, logoScale)
+        this.logo2Sprite.render(this.context, this.canvas.width * 0.45 / this.devicePixelRatio, this.canvas.height * 0.34 / this.devicePixelRatio, logoScale)
         this.logoSprite?.update();
         this.logo2Sprite?.update();
 
