@@ -163,6 +163,34 @@ export default class MenuScene extends Scene {
     assets.loadImage('skeleton', 'characters/skeletonWarrior.png');
     assets.loadImage('swordman', 'characters/swordman.png');
     assets.loadImage('warden', 'characters/warden.png');
+    assets.loadImage('banshee', 'characters/MiniBansheeQueen.png');
+    assets.loadImage('ghoul', 'characters/MiniGhoul.png');
+    assets.loadImage('priestess', 'characters/MiniHighPriestess.png');
+    assets.loadImage('druid', 'characters/MiniSatyrDruid.png');
+    assets.loadImage('satyr', 'characters/MiniSatyrWarrior.png');
+    assets.loadImage('skeletonMage', 'characters/MiniSkeletonMage.png');
+    assets.loadImage('flower1', 'background/flower1.png');
+    assets.loadImage('flower2', 'background/flower2.png');
+    assets.loadImage('flower3', 'background/flower3.png');
+    assets.loadImage('flower4', 'background/flower4.png');
+    assets.loadImage('rock', 'background/rock.png');
+    assets.loadImage('wood', 'background/wood.png');
+    assets.loadImage('enemyAura1', 'buffs/enemyAura1.png');
+    assets.loadImage('enemyAura2', 'buffs/enemyAura2.png');
+    assets.loadImage('chest1', 'inventoryItems/basicchest.png');
+    assets.loadImage('coin1', 'items/coin.png');
+    assets.loadImage('goldcoinIcon', 'items/goldcoinIcon.png');
+    assets.loadImage('basicSpear', 'weaponIcons/basicSpear.png');
+    assets.loadImage('dagger', 'weaponIcons/dagger.png');
+    assets.loadImage('combatSheet', 'weapons/combatSheet.png');
+    assets.loadImage('daggerWeapon', 'weapons/dagger.png');
+    assets.loadImage('skeletonprojectile', 'weapons/skeletonProjectile.png');
+    assets.loadImage('spearSlash1', 'weapons/spearSlash2.png');
+    assets.loadImage('spearSlash2', 'weapons/spearSlash3.png');
+    assets.loadImage('swordProjectile', 'weapons/swordProjectile.png');
+    assets.loadImage('tonsOfBullets', 'weapons/tonsOfBullets.png');
+    assets.loadImage('woodenArrow', 'weapons/woodenArrow.png');
+
     assets.loadAudioAssets({
       backgroundMusic: 'sounds/strangestThing.mp3',
       attackSFX: 'sounds/slash.mp3',
@@ -337,7 +365,7 @@ export default class MenuScene extends Scene {
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     if (!this.assetsLoaded) {
-      this.context.fillText('Loading assets...', this.canvas.width / 2 - 50, 600);
+      this.LoadingComponent?.render(this.context);
     } else {
       if (this.mode === "menu") {
         this.usernameComponent?.render(this.context, this.canvas.width, this.canvas.height, this.username, this.devicePixelRatio);

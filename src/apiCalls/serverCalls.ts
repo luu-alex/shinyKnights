@@ -29,6 +29,7 @@ export const gameResults = async (username: string, wave: number) => {
 
 export const fetchOrCreateProfile = async (username: string) => {
     try {
+        console.log("fetching or creating", )
         const response = await axios.post(serverURL + '/api/profile', { username });
         return response.data;
     } catch (err) {
