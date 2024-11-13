@@ -40,10 +40,9 @@ export class LightningSkill extends Skill {
 
     // You can optionally override the render method for custom animations
     public render(context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
-        if (this.renderCount < 500) {
+        if (!this.sprite.isLastFrame()) {
             this.sprite.render(context, this.x - cameraX, this.y - cameraY, 1); // Use the base class rendering logic
         }
-        this.renderCount+=1;
         // Additional custom rendering for lightning (optional)
     }
 }
