@@ -260,6 +260,11 @@ export default class MenuScene extends Scene {
     const mouseY = (event.clientY - rect.top) * this.devicePixelRatio;
     // Check if the start button was clicked
     if (this.isLoading) return;
+
+    if (this.failOrderComponent && this.failOrderComponent.isVisible) {
+      this.failOrderComponent?.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
+      return;
+    }
     if (this.page === 'menu') {
       this.playButton?.handleClick(mouseX, mouseY, this.devicePixelRatio);
       this.settingButton?.handleClick(mouseX, mouseY, this.canvas.width, this.canvas.height);
@@ -289,10 +294,6 @@ export default class MenuScene extends Scene {
     if (this.purchasedGemsComponent && this.purchasedGemsComponent.isVisible) {
       console.log("clicking exit button")
       this.purchasedGemsComponent.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
-      return;
-    }
-    if (this.failOrderComponent && this.failOrderComponent.isVisible) {
-      this.failOrderComponent?.exitButton.handleClick(mouseX, mouseY, this.devicePixelRatio);
       return;
     }
     if (this.mode === "shop") {

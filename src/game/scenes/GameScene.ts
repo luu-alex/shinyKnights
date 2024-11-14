@@ -171,7 +171,7 @@ export default class GameScene extends Scene {
 		if (this.currentRound === 4) {
 			this.enemySpawner.pushBanshee();
 		}
-		if (this.currentRound === 10 && this.gameOverComponent) {
+		if (this.currentRound === 5 && this.gameOverComponent) {
 			this.gameOverComponent.updateWave(this.currentRound);
 			this.gameOverComponent.title = "Victory"
 			this.gameOverComponent.description = "You have won!"
