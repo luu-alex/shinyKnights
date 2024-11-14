@@ -94,10 +94,6 @@ export class Shop {
             darkGreenText,
             adjustedHeight * 0.02
         );
-
-        const lightning = new LightningSkill(this.player);
-        this.player.learnSkill(lightning);
-        
     }
 
     

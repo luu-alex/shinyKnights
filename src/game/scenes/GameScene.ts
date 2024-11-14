@@ -41,7 +41,7 @@ export default class GameScene extends Scene {
 	private mapHeight = 1000;
 	private rock: Sprite;
 	private roundTime: number = 45;
-	private roundTimer: number = 2;
+	private roundTimer: number = 45;
 	private currentRound: number = 1;
 	private shop: Shop;
 	private roundEnd: boolean = false;
@@ -146,6 +146,7 @@ export default class GameScene extends Scene {
 	private async exitAndSubmit() {
 		if (this.isLoading) return;
 		this.isLoading = true;
+		this.soundManager.stopSound('backgroundMusic');
 		await gameResults(this.username, this.currentRound);
 		this.exitGame();
 	}
@@ -278,6 +279,7 @@ export default class GameScene extends Scene {
 	}
 	private exitGame() {
 		// this is exiting the game to menuScene
+		this.soundManager.stopSound('backgroundMusic');
 		if (this.canvas && this.context) {
 			console.log("changin scene")
 			this.createMenuScene(this.canvas, this.context);

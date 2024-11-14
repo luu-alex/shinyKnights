@@ -28,8 +28,10 @@ export class LightningSkill extends Skill {
             this.x = target.x;
             this.y = target.y;
             this.renderCount = 0;
-            this.sprite.reset()
-            this.looped = false;
+            if (this.looped) {
+                this.sprite.reset()
+                this.looped = false;
+            }
 
             // Apply status effects (e.g., burning) to the target
             for (const effect of this.statusEffects) {
