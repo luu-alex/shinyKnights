@@ -10,7 +10,7 @@ export default class Explosion {
     public alive: boolean;
     private duration: number;
     private elapsedTime: number;
-    private scale = 3;
+    private scale = 1;
     private radius: number;
     public damage: number;
     private hitEnemies: Set<Enemy>;
@@ -29,7 +29,11 @@ export default class Explosion {
 
     public update(deltaTime: number, enemies: Enemy[]) {
         this.elapsedTime += deltaTime;
-        this.sprite.update();
+        if (!this.sprite.isLastFrame()) {
+            this.sprite.update();
+            this.alive = false;
+
+        }
 
         // Mark the explosion as finished if the duration has passed
         if (this.elapsedTime >= this.duration) {
@@ -57,6 +61,8 @@ export default class Explosion {
             const adjustedY = this.y - (this.sprite.frameHeight * this.scale) / 2 - cameraY;
 
             // Render the sprite with the specified scale
+            console.log("explosion frame", this.sprite.isLastFrame())
+            if (!this.sprite.isLastFrame())
             this.sprite.render(context, adjustedX, adjustedY, this.scale);
         }
     }

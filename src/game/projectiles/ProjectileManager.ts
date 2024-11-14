@@ -28,7 +28,7 @@ export default class ProjectileManager {
         // console.log(this.explosions)
         this.projectiles = this.projectiles.filter(projectile => {
             if (!projectile.alive && projectile.willExplode) {
-                this.explosions.push(new Explosion(projectile.x, projectile.y, new Sprite('skills/fireexplosion.png', 32, 42, 6, 60), 1, 10));
+                this.explosions.push(new Explosion(projectile.x, projectile.y, new Sprite('skills/fireexplosion.png', 64, 55, 8, 60), 1, 10));
             }
             return projectile.alive;
         }); // Remove dead projectiles

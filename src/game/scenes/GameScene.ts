@@ -41,7 +41,7 @@ export default class GameScene extends Scene {
 	private mapHeight = 1000;
 	private rock: Sprite;
 	private roundTime: number = 45;
-	private roundTimer: number = 45;
+	private roundTimer: number = 2;
 	private currentRound: number = 1;
 	private shop: Shop;
 	private roundEnd: boolean = false;

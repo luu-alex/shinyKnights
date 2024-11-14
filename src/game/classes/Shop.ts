@@ -24,10 +24,10 @@ export class Shop {
         { name: "Buckler", cost: 1, description: "+10 HP", sprite: new Sprite('shopIcons/buckler.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Blue Necklace", cost: 1, description: "+2 Magic damage, will be added next update :)", sprite: new Sprite('shopIcons/saphireNecklace.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "Lightning", cost: 3, description: "Skill: Casts a powerful magic spell. ", sprite: new Sprite('shopIcons/lightningScroll.png', 16, 16, 1, 100), bought: false, unique: true },
-        { name: "Holy Circle", cost: 0, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
+        { name: "Holy Circle", cost: 7, description: "A ranged weapon", sprite: new Sprite('shopIcons/holyCircle.png', 16, 16, 1, 100), bought: false, unique: true },
         { name: "Witches Apple", cost: 2, description: "+3 HP gained from consumables. +2 Magic damage.", sprite: new Sprite('shopIcons/apple.png', 16, 16, 1, 100), bought: false, unique: false },
         { name: "War Helmet", cost: 3, description: "+3 Strength. +10 HP", sprite: new Sprite('shopIcons/warHelmet.png', 16, 16, 1, 100), bought: false, unique: false },
-        { name: "Fireball", cost: 3, description: "A skill", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
+        { name: "Fireball", cost: 3, description: "Conjure fireballs!", sprite: new Sprite('shopIcons/fireballScroll.png', 16, 16, 1, 100), bought: false, unique: true},
         { name: "Bear", cost: 3, description: "A pet bear will fight for you!", sprite: new Sprite('pets/MiniBear.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.5, translate: { x: 0, y: -26 } },
         { name: "Bunny", cost: 3, description: "A bunny will help dig and find items for you!", sprite: new Sprite('pets/MiniBunny.png', 32, 32, 1, 100), bought: false, unique: true, scale: 2, translate: { x: 0, y: -32 } },
         { name: "Boar", cost: 2, description: "A boar that will charge at enemies and attack.", sprite: new Sprite('pets/MiniBoar.png', 32, 32, 1, 100), bought: false, unique: true, scale: 1.7, translate: { x: 0, y: -32 } },
@@ -94,6 +94,9 @@ export class Shop {
             darkGreenText,
             adjustedHeight * 0.02
         );
+
+        const lightning = new LightningSkill(this.player);
+        this.player.learnSkill(lightning);
         
     }
 
@@ -304,6 +307,7 @@ export class Shop {
 
 
         this.continueButton?.render(context);
+        
         
     }
 

@@ -17,14 +17,14 @@ export class Fireball extends Skill {
     private chargeX = 0;
     private chargeY = 0;
     constructor(player: Player, projectileManager: ProjectileManager) {
-        const fireballSprite = new Sprite('skills/fireball.png', 32, 42, 6, 240);  // Fireball animation
+        const fireballSprite = new Sprite('skills/fireball.png', 32, 32, 1, 240);  // Fireball animation
         super('Fireball', 5, 1000, fireballSprite, player);  // 100 damage, 3 second cooldown
         this.fireballSprite = fireballSprite;
         this.projectileManager = projectileManager;
         this.chargeDuration = 1.5; // Fireball will charge for 1.5 seconds
         this.charging = false;
         this.chargeTime = 0;
-        this.chargeSprite = new Sprite('skills/firecharge.png', 32, 42, 6, 120);  // Charge animation
+        this.chargeSprite = new Sprite('skills/firecharge.png', 32, 32, 6, 120);  // Charge animation
  
         // Add a burning effect upgrade to the fireball skill
         this.addUpgrade((skill: Skill) => {
@@ -115,7 +115,7 @@ export class Fireball extends Skill {
     }
     public render (context: CanvasRenderingContext2D, cameraX: number, cameraY: number) {
         if (this.charging) {
-            this.chargeSprite.render(context, this.chargeX - this.chargeSprite.frameWidth - cameraX, this.chargeY - this.chargeSprite.frameHeight - cameraY, 2);
+            this.chargeSprite.render(context, this.chargeX - this.chargeSprite.frameWidth - cameraX, this.chargeY - this.chargeSprite.frameHeight - cameraY, 1);
         }
     }
 }

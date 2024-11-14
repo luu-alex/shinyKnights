@@ -40,6 +40,9 @@ export class CharacterPopupComponent {
             this.descriptionBackground = darkGreenText;
             this.textFont = darkGreenText
         }
+        console.log("title",this.title)
+        console.log("locked", this.unlocked);
+        this.unlocked = true;
         const buttonT = this.unlocked ? buttonTitle : "Locked";
         this.useButton = new Button(
             canvasWidth * 0.2,

@@ -61,4 +61,7 @@ export default class Sprite {
     public isLastFrame() {
         return this.currentFrame === this.totalFrames - 1;
     }
+    public reset() {
+        this.currentFrame = 0;
+    }
 }

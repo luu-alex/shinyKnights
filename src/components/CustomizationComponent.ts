@@ -323,7 +323,7 @@ export class CustomizationComponent {
                 if (this.weaponsBox[i].isClicked(x, y, devicePixelRatio) && this.weaponPopupComponent) {
                     // console.log(" updating info", this.weaponsData[i])
                     const sprite = getSprite(this.weaponsData[i].name);
-                    this.weaponPopupComponent.updateInfo({... this.weaponsData[i], title: this.weaponsData[i].name, itemSprite: sprite, index: i, updateFN: () => this.equipWeapon(i)});
+                    this.weaponPopupComponent.updateInfo({... this.weaponsData[i], title: this.weaponsData[i].name, itemSprite: sprite, index: i, updateFN: () => this.equipWeapon(i), level: this.weaponsData[i].level});
                     this.weaponPopupComponent.levelUpWeapon = () => {
                         this.equipWeapon(i);
                     }

@@ -140,6 +140,7 @@ export class PopupComponent {
         if (inventory.level) {
             this.weaponStat.level = inventory.level;
             const cost = levelToGold(inventory.level);
+            console.log("cost to level", cost)
             if (this.useButton)
             this.useButton.text = this.buttonTitle === "Equip" ? this.buttonTitle : this.buttonTitle + ":" + cost;
 
